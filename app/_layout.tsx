@@ -5,9 +5,29 @@ import {
 } from '@react-navigation/native';
 // import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
+import { StatusBar } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
+
+import {
+  default_light_backgrounds,
+  default_light_texts,
+} from '@/constants/colours';
+
+const {
+  background_variant_1,
+  background_variant_2,
+  background_variant_3,
+  background_variant_4,
+} = default_light_backgrounds || {};
+const {
+  text_variant_1,
+  text_variant_2,
+  text_variant_3,
+  text_variant_4,
+  text_variant_5,
+} = default_light_texts || {};
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import {
@@ -62,13 +82,19 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
-        <Stack.Screen name='(auth)' options={{ headerShown: false }} />
-        <Stack.Screen name='index' options={{ headerShown: false }} />
-        {/* <Stack.Screen name="+not-found" /> */}
-      </Stack>
-    </ThemeProvider>
+    <>
+      <StatusBar
+        // backgroundColor={background_variant_1}
+        barStyle={'dark-content'}
+      />
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack>
+          <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
+          <Stack.Screen name='(auth)' options={{ headerShown: false }} />
+          <Stack.Screen name='index' options={{ headerShown: false }} />
+          {/* <Stack.Screen name="+not-found" /> */}
+        </Stack>
+      </ThemeProvider>
+    </>
   );
 }

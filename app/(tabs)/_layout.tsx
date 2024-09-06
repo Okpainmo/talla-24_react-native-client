@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { default_light_backgrounds } from '@/constants/colours';
 import { default_light_texts } from '@/constants/colours';
 import { TabBarIcons } from '@/constants/icons';
+import { StyleSheet } from 'react-native';
 
 // import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 // import { Colors } from '@/constants/colors';
@@ -17,15 +18,20 @@ export default function TabLayout() {
     background_variant_3,
     background_variant_4,
   } = backgrounds;
-  const { text_variant_1, text_variant_2, text_variant_3, text_variant_4 } =
-    texts;
+  const {
+    text_variant_1,
+    text_variant_2,
+    text_variant_3,
+    text_variant_4,
+    text_variant_5,
+  } = texts;
   // const colorScheme = useColorScheme();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: `${background_variant_2}`,
-        tabBarInactiveTintColor: `${text_variant_3}`,
+        tabBarActiveTintColor: `${text_variant_2}`,
+        tabBarInactiveTintColor: `${text_variant_1}`,
         // tabBarShowLabel: false,
         headerShown: false,
         tabBarLabelPosition: 'below-icon',
@@ -33,14 +39,15 @@ export default function TabLayout() {
           paddingTop: 2,
           paddingBottom: 3,
           fontFamily: 'font_500',
+          color: `${text_variant_1}`,
         },
         tabBarIconStyle: {
           marginTop: 5,
         },
         tabBarStyle: {
           backgroundColor: `${background_variant_1}`,
-          // borderTopWidth: 1,
-          // borderTopColor: '#232533',
+          borderTopWidth: StyleSheet.hairlineWidth,
+          borderTopColor: `${text_variant_3}`,
           minHeight: 60,
           // paddingVertical: 10,
         },

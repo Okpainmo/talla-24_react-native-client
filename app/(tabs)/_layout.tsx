@@ -80,14 +80,14 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name='settings'
+        name='account'
         options={{
-          title: 'Settings',
+          title: 'Account',
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcons
-              name={focused ? 'cog' : 'cog-outline'}
+              name={focused ? 'person-circle' : 'person-circle-outline'}
               color={color}
-              size={26}
+              size={28}
             />
           ),
         }}

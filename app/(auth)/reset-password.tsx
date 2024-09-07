@@ -49,7 +49,7 @@ const ResetPasssword = () => {
       }}
     >
       <ScrollView
-        className='px-3 mt-[30px]'
+        className='px-3 mt-[15px]'
         style={{
           backgroundColor: background_variant_1,
           paddingTop: Platform.OS === 'android' ? 55 : 0,
@@ -58,7 +58,7 @@ const ResetPasssword = () => {
         <Pressable
           onPress={() => router.back()}
           style={{ borderColor: text_variant_3 }}
-          className={`mb-10 w-[40px] h-[40px] rounded-full border flex items-center justify-center`}
+          className={`mb-4 w-[40px] h-[40px] rounded-full border flex items-center justify-center`}
         >
           <Ionicons
             name='chevron-back-outline'
@@ -77,7 +77,7 @@ const ResetPasssword = () => {
             style={{ fontFamily: 'font_400' }}
             className='mt-2 leading-[25px]'
           >
-            Kindly provide your email. Your new password will be send to the
+            Kindly provide your email. Your new password will be sent to the
             provided email address.
           </Text>
         </View>
@@ -85,7 +85,7 @@ const ResetPasssword = () => {
           <View className='input-group email flex gap-y-2 mb-[20px]'>
             <Text
               className='label'
-              style={{ color: text_variant_1, fontFamily: 'font_400' }}
+              style={{ color: text_variant_1, fontFamily: 'font_500' }}
             >
               Email
             </Text>
@@ -116,7 +116,7 @@ const ResetPasssword = () => {
             />
           </View>
         </View>
-        <View className='button-wrapper mt-[25px]'>
+        <View className='button-wrapper mt-[15px]'>
           <TouchableOpacity
             style={{
               backgroundColor: background_variant_2,

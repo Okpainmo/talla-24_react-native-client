@@ -49,7 +49,7 @@ const RequestAccess = () => {
       }}
     >
       <ScrollView
-        className='px-3 mt-[30px]'
+        className='px-3 mt-[15px]'
         style={{
           backgroundColor: background_variant_1,
           paddingTop: Platform.OS === 'android' ? 55 : 0,
@@ -58,7 +58,7 @@ const RequestAccess = () => {
         <Pressable
           onPress={() => router.back()}
           style={{ borderColor: text_variant_3 }}
-          className={`mb-10 w-[40px] h-[40px] rounded-full border flex items-center justify-center`}
+          className={`mb-4 w-[40px] h-[40px] rounded-full border flex items-center justify-center`}
         >
           <Ionicons
             name='chevron-back-outline'
@@ -66,19 +66,17 @@ const RequestAccess = () => {
             color={text_variant_3}
           />
         </Pressable>
-        <View className='bold page text'>
-          <Text
-            className='text-[30px]'
-            style={{ color: text_variant_2, fontFamily: 'font_800' }}
-          >
-            Log in.
-          </Text>
-        </View>
-        <View className='sign-up-form-wrapper mt-[25px]'>
+        <Text
+          className='text-[30px]'
+          style={{ color: text_variant_2, fontFamily: 'font_800' }}
+        >
+          Log in.
+        </Text>
+        <View className='sign-up-form-wrapper mt-[15px]'>
           <View className='input-group email flex gap-y-2 mb-[30px]'>
             <Text
               className='label'
-              style={{ color: text_variant_1, fontFamily: 'font_400' }}
+              style={{ color: text_variant_1, fontFamily: 'font_500' }}
             >
               Email
             </Text>
@@ -111,7 +109,7 @@ const RequestAccess = () => {
           <View className='input-group password flex gap-y-2 mb-[20px] relative'>
             <Text
               className='label'
-              style={{ color: text_variant_1, fontFamily: 'font_400' }}
+              style={{ color: text_variant_1, fontFamily: 'font_500' }}
             >
               Password
             </Text>

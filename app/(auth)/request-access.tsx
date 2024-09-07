@@ -46,10 +46,11 @@ const LogIn = () => {
       style={{
         flex: 1,
         backgroundColor: background_variant_1,
+        // paddingBottom: 100,
       }}
     >
       <ScrollView
-        className='px-3 mt-[30px]'
+        className='px-3 mt-[15px]'
         style={{
           backgroundColor: background_variant_1,
           paddingTop: Platform.OS === 'android' ? 55 : 0,
@@ -58,7 +59,7 @@ const LogIn = () => {
         <Pressable
           onPress={() => router.back()}
           style={{ borderColor: text_variant_3 }}
-          className={`mb-6 w-[40px] h-[40px] rounded-full border flex items-center justify-center`}
+          className={`mb-4 w-[40px] h-[40px] rounded-full border flex items-center justify-center`}
         >
           <Ionicons
             name='chevron-back-outline'
@@ -73,19 +74,49 @@ const LogIn = () => {
           >
             Request Access.
           </Text>
-          <Text
-            style={{ fontFamily: 'font_400' }}
-            className='mt-2 leading-[25px]'
-          >
+          <Text style={{ fontFamily: 'font_400' }} className='leading-[25px]'>
             Kindly create an account, and wait for an admin to approve your
             request.
           </Text>
         </View>
-        <View className='sign-up-form-wrapper mt-[25px]'>
-          <View className='input-group email flex gap-y-2 mb-[30px]'>
+        <View className='sign-up-form-wrapper mt-[15px]'>
+          <View className='input-group full-name flex gap-y-2 mb-[20px]'>
             <Text
               className='label'
-              style={{ color: text_variant_1, fontFamily: 'font_400' }}
+              style={{ color: text_variant_1, fontFamily: 'font_500' }}
+            >
+              Full Name
+            </Text>
+            <TextInput
+              placeholder='provide your full name'
+              className='border border-b'
+              style={{
+                width: '100%',
+                paddingHorizontal: 12,
+                paddingVertical: 12,
+                // border-bottom: '1px solid',
+                // backgroundColor: `${background_variant_3}`,
+                borderRadius: 10,
+                color: `${text_variant_3}`,
+                borderColor: `${text_variant_3}`,
+                fontSize: 14,
+                fontFamily: 'font_400',
+              }}
+              placeholderTextColor={text_variant_3} // Set the placeholder color here
+              // value={loginForm.email}
+              onChangeText={(text) => {
+                // console.log('email input in progress...');
+                // setLoginForm({
+                //   ...loginForm,
+                //   email: text,
+                // });
+              }}
+            />
+          </View>
+          <View className='input-group email flex gap-y-2 mb-[20px]'>
+            <Text
+              className='label'
+              style={{ color: text_variant_1, fontFamily: 'font_500' }}
             >
               Email
             </Text>
@@ -115,10 +146,10 @@ const LogIn = () => {
               }}
             />
           </View>
-          <View className='input-group password flex gap-y-2 mb-[30px] relative'>
+          <View className='input-group password flex gap-y-2 mb-[20px] relative'>
             <Text
               className='label'
-              style={{ color: text_variant_1, fontFamily: 'font_400' }}
+              style={{ color: text_variant_1, fontFamily: 'font_500' }}
             >
               Password
             </Text>
@@ -172,7 +203,7 @@ const LogIn = () => {
           <View className='input-group password flex gap-y-2 mb-[20px] relative'>
             <Text
               className='label'
-              style={{ color: text_variant_1, fontFamily: 'font_400' }}
+              style={{ color: text_variant_1, fontFamily: 'font_500' }}
             >
               Repeat Password
             </Text>
@@ -251,7 +282,7 @@ const LogIn = () => {
         </View>
         <View
           className='sign-up-instead-wrapper flex flex-wrap gap-x-2 flex-row 
-        items-center justify-center mt-[20px]'
+        items-center justify-center mt-[20px] pb-[150px]'
         >
           <Text
             className='text-[12px]'

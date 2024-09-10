@@ -15,5 +15,8 @@ module.exports = (() => {
     sourceExts: [...resolver.sourceExts, 'svg'],
   };
 
+  // addition for firebase
+  config.resolver.assetExts.push('cjs');
+
   return config;
 })();

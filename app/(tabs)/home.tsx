@@ -44,27 +44,31 @@ function AboutModal({ showModal, setShowModal }: SuccessModalProps) {
       visible={showModal}
       // style={{ height: 300 }}
     >
-      <ScrollView className='modal-content h-[100%] overflow-y-auto w-full absolute bottom-0 px-3'>
-        <View className='flex flex-row items-center mt-6 mb-4'>
-          <Pressable
-            onPress={() => setShowModal(false)}
-            style={{ borderColor: text_variant_3 }}
-            className={`mr-6 w-[40px] h-[40px] rounded-full border flex items-center justify-center`}
-          >
-            <Ionicons
-              name='chevron-back-outline'
-              size={22}
-              color={text_variant_3}
-            />
-          </Pressable>
-          <Text
-            className='text-[25px] h-[40px] mt-1'
-            style={{ color: text_variant_1, fontFamily: 'font_800' }}
-          >
-            Talla 24.
-          </Text>
-        </View>
-        <View className='pb-[60px]'>
+      <View
+        className='modal-header flex flex-row items-center px-3 pb-[7px]'
+        style={{
+          backgroundColor: background_variant_1,
+          marginTop: Platform.OS === 'android' ? 10 : 0,
+          // paddingBottom: Platform.OS === 'android' ? 10 : 0,
+        }}
+        // style={{  }}
+      >
+        <Pressable
+          onPress={() => setShowModal(false)}
+          style={{ borderColor: text_variant_3 }}
+          className={`mr-6 w-[35px] h-[35px] rounded-full border flex items-center justify-center`}
+        >
+          <Ionicons name='close-outline' size={25} color={text_variant_3} />
+        </Pressable>
+        <Text
+          className='text-[25px] h-[40px] mt-1'
+          style={{ color: text_variant_1, fontFamily: 'font_800' }}
+        >
+          Talla 24.
+        </Text>
+      </View>
+      <ScrollView className='modal-content py-[10px] top-[30px] h-[100%] overflow-y-auto w-full absolute bottom-0 px-3 mt-6 mb-4'>
+        <View className='pb-[100px]'>
           <Text
             className='text-[12px] leading-[25px]'
             style={{ fontFamily: 'font_400' }}
@@ -133,17 +137,25 @@ const Home = () => {
       className='w-full flex-1'
     >
       <View
-        className='header flex flex-row items-center px-3 justify-between'
+        className={`${
+          Platform.OS === 'ios' && 'hidden'
+        } h-[10px] w-full relative z-40`}
+        style={{ backgroundColor: background_variant_1 }}
+      >
+        {/* { shadow decoy for android only} */}
+      </View>
+      <View
+        className='header flex flex-row items-center px-3 justify-between top-[-5px] relative'
         style={{
           backgroundColor: background_variant_1,
-          // shadowColor: text_variant_1,
-          // shadowOpacity: 0.1,
-          // shadowRadius: 10,
-          // shadowOffset: {
-          //   width: 0,
-          //   height: 0,
-          // },
-          // elevation: Platform.OS === 'android' ? 2 : 0,
+          shadowColor: text_variant_1,
+          shadowOpacity: 0.1,
+          shadowRadius: 10,
+          shadowOffset: {
+            width: 0,
+            height: 0,
+          },
+          elevation: Platform.OS === 'android' ? 2 : 0,
         }}
       >
         <View>
@@ -180,12 +192,10 @@ const Home = () => {
           </Pressable>
         </View>
       </View>
-      <ScrollView
-      // className='flex-1'
-      >
+      <ScrollView className='relative top-[-5px]'>
         <AboutModal showModal={showModal} setShowModal={setShowModal} />
 
-        <View className='px-3 mt-[20px]'>
+        <View className='px-3 pt-[20px]'>
           <View
             className='rounded-[15px] py-5'
             style={{ backgroundColor: background_variant_2 }}
@@ -232,7 +242,7 @@ const Home = () => {
                   color={text_variant_1}
                 />
               </View>
-              <View className='mt-8 py-4 flex-1 justify-center items-center'>
+              <View className='mt-4 py-4 flex-1 justify-center items-center'>
                 <Text
                   className='text-4xl'
                   style={{ color: text_variant_2, fontFamily: 'font_300' }}
@@ -269,7 +279,7 @@ const Home = () => {
               </View>
               <View className='flex flex-row'>
                 <View
-                  className='mt-8 flex-1 justify-center items-center border-r pr-4 py-3'
+                  className='mt-4 flex-1 justify-center items-center border-r pr-4 py-4'
                   style={{ borderColor: text_variant_3 }}
                 >
                   <Text
@@ -285,7 +295,7 @@ const Home = () => {
                     Online
                   </Text>
                 </View>
-                <View className='mt-8 flex-1 justify-center items-center ml-4'>
+                <View className='mt-4 flex-1 justify-center items-center ml-4'>
                   <Text
                     className='text-4xl'
                     style={{ color: text_variant_1, fontFamily: 'font_300' }}

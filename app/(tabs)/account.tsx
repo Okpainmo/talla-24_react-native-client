@@ -13,10 +13,11 @@ import {
   TouchableOpacity,
   Modal,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 const mockAvatar1 = require('../../assets/images/img-3.jpg');
+import { UserContext } from '@/context/User.context';
 
 import {
   default_light_backgrounds,
@@ -41,6 +42,7 @@ const {
 const Profile = () => {
   const [showNameInput, setShowNameInput] = useState(false);
   const [showEmailInput, setShowEmailInput] = useState(false);
+  const { testing } = useContext(UserContext);
 
   return (
     <KeyboardAvoidingView
@@ -53,7 +55,7 @@ const Profile = () => {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}
     >
       <View
-        className='header flex flex-row items-center mb-[10px] px-3 w-full'
+        className='header flex flex-row items-center px-3 w-full'
         style={{ backgroundColor: background_variant_1 }}
       >
         <Pressable
@@ -74,7 +76,7 @@ const Profile = () => {
           Account.
         </Text>
       </View>
-      <ScrollView className='flex flex-1 w-full'>
+      <ScrollView className='flex flex-1 w-full pt-[20px]'>
         {/* <View
           className='flex flex-1 px-3'
           style={{ backgroundColor: background_variant_1 }}
@@ -132,34 +134,40 @@ const Profile = () => {
                   showNameInput ? 'flex' : 'hidden'
                 } mb-[15px] flex-1`}
               >
-                <TextInput
-                  className='border border-b'
-                  placeholder='add new user name'
+                <View
+                  className='border pl-[12px]'
                   style={{
-                    width: '75%',
-                    paddingHorizontal: 12,
-                    paddingVertical: 12,
-                    // border-bottom: '1px solid',
-                    // backgroundColor: `${background_variant_3}`,
                     borderRadius: 10,
-                    color: `${text_variant_3}`,
                     borderColor: `${text_variant_3}`,
-                    fontSize: 14,
-                    fontFamily: 'font_400',
+                    width: '75%',
                   }}
-                  multiline={true}
-                  placeholderTextColor={text_variant_1} // Set the placeholder color here
-                  // value='Andrew James Okpainmo'
-                  // value={loginForm.password}
-                  // onChangeText={(text) => {
-                  //   // console.log('password input in progress...');
+                >
+                  <TextInput
+                    // className='border'
+                    placeholder='add new user name'
+                    style={{
+                      // paddingHorizontal: 12,
+                      paddingVertical: 12,
+                      // borderBottom: '1px solid',
+                      // backgroundColor: `${background_variant_3}`,
+                      color: `${text_variant_1}`,
+                      fontSize: 14,
+                      fontFamily: 'font_400',
+                    }}
+                    multiline={true}
+                    placeholderTextColor={text_variant_3} // Set the placeholder color here
+                    // value='Andrew James Okpainmo'
+                    // value={loginForm.password}
+                    // onChangeText={(text) => {
+                    //   // console.log('password input in progress...');
 
-                  //   setLoginForm({
-                  //     ...loginForm,
-                  //     password: text,
-                  //   });
-                  // }}
-                />
+                    //   setLoginForm({
+                    //     ...loginForm,
+                    //     password: text,
+                    //   });
+                    // }}
+                  />
+                </View>
                 <TouchableOpacity
                   onPress={() => setShowNameInput(false)}
                   className='px-4 py-2 text-[12px] mt-4 w-[100px] rounded-[10px]'
@@ -192,7 +200,8 @@ const Profile = () => {
               </Text>
             </View>
             <Pressable
-              onPress={() => setShowNameInput(true)}
+              // onPress={() => setShowNameInput(true)}
+              onPress={() => testing()}
               className='absolute right-3 z-20'
               // style={{ backgroundColor: background_variant_2 }}
             >
@@ -218,34 +227,40 @@ const Profile = () => {
                   showEmailInput ? 'flex' : 'hidden'
                 } mb-[15px] flex-1`}
               >
-                <TextInput
-                  className='border border-b'
-                  placeholder='add new user name'
+                <View
+                  className='border pl-[12px]'
                   style={{
-                    width: '75%',
-                    paddingHorizontal: 12,
-                    paddingVertical: 12,
-                    // border-bottom: '1px solid',
-                    // backgroundColor: `${background_variant_3}`,
                     borderRadius: 10,
-                    color: `${text_variant_3}`,
                     borderColor: `${text_variant_3}`,
-                    fontSize: 14,
-                    fontFamily: 'font_400',
+                    width: '75%',
                   }}
-                  multiline={true}
-                  placeholderTextColor={text_variant_1} // Set the placeholder color here
-                  // value='Andrew James Okpainmo'
-                  // value={loginForm.password}
-                  // onChangeText={(text) => {
-                  //   // console.log('password input in progress...');
+                >
+                  <TextInput
+                    // className='border'
+                    placeholder='add your email'
+                    style={{
+                      // paddingHorizontal: 12,
+                      paddingVertical: 12,
+                      // borderBottom: '1px solid',
+                      // backgroundColor: `${background_variant_3}`,
+                      color: `${text_variant_1}`,
+                      fontSize: 14,
+                      fontFamily: 'font_400',
+                    }}
+                    multiline={true}
+                    placeholderTextColor={text_variant_3} // Set the placeholder color here
+                    // value='Andrew James Okpainmo'
+                    // value={loginForm.password}
+                    // onChangeText={(text) => {
+                    //   // console.log('password input in progress...');
 
-                  //   setLoginForm({
-                  //     ...loginForm,
-                  //     password: text,
-                  //   });
-                  // }}
-                />
+                    //   setLoginForm({
+                    //     ...loginForm,
+                    //     password: text,
+                    //   });
+                    // }}
+                  />
+                </View>
                 <TouchableOpacity
                   onPress={() => setShowEmailInput(false)}
                   className='px-4 py-2 text-[12px] mt-4 w-[100px] rounded-[10px]'

@@ -50,7 +50,7 @@ const ResetPassword = () => {
       className='w-full'
     >
       <View
-        className='header flex flex-row items-center mb-[10px] px-3'
+        className='header flex flex-row items-center px-3 pb-[7px]'
         style={{ backgroundColor: background_variant_1 }}
       >
         <Pressable

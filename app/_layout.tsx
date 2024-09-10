@@ -9,6 +9,8 @@ import { StatusBar } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
+import AuthContextProvider from '@/context/Auth.context';
+import UserContextProvider from '@/context/User.context';
 
 import {
   default_light_backgrounds,
@@ -87,15 +89,21 @@ export default function RootLayout() {
         // backgroundColor={background_variant_1}
         barStyle={'dark-content'}
       />
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
-          <Stack.Screen name='(auth)' options={{ headerShown: false }} />
-          <Stack.Screen name='(misc)' options={{ headerShown: false }} />
-          <Stack.Screen name='index' options={{ headerShown: false }} />
-          {/* <Stack.Screen name="+not-found" /> */}
-        </Stack>
-      </ThemeProvider>
+      <AuthContextProvider>
+        <UserContextProvider>
+          <ThemeProvider
+            value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
+          >
+            <Stack>
+              <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
+              <Stack.Screen name='(auth)' options={{ headerShown: false }} />
+              <Stack.Screen name='(misc)' options={{ headerShown: false }} />
+              <Stack.Screen name='index' options={{ headerShown: false }} />
+              {/* <Stack.Screen name="+not-found" /> */}
+            </Stack>
+          </ThemeProvider>
+        </UserContextProvider>
+      </AuthContextProvider>
     </>
   );
 }

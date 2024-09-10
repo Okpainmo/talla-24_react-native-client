@@ -13,7 +13,7 @@ import {
   TouchableOpacity,
   Modal,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -21,6 +21,8 @@ import {
   default_light_backgrounds,
   default_light_texts,
 } from '@/constants/colours';
+
+import { AuthContext } from '@/context/Auth.context';
 
 const {
   background_variant_1,
@@ -38,6 +40,7 @@ const {
 
 const RequestAccess = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const { testing } = useContext(AuthContext);
 
   return (
     <KeyboardAvoidingView
@@ -183,7 +186,7 @@ const RequestAccess = () => {
               width: '100%',
               cursor: 'pointer',
             }}
-            onPress={() => router.push('/home')}
+            onPress={() => testing()}
           >
             <Text
               style={{

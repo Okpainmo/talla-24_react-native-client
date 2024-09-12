@@ -23,6 +23,7 @@ import {
 } from '@/constants/colours';
 
 import { AuthContext } from '@/context/Auth.context';
+import GlobalModal from '@/components/Layout/GlobalModal';
 
 const {
   background_variant_1,
@@ -44,6 +45,7 @@ const RequestAccess = () => {
 
   return (
     <KeyboardAvoidingView
+      className='relative'
       behavior='padding'
       keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
       style={{
@@ -51,6 +53,7 @@ const RequestAccess = () => {
         backgroundColor: background_variant_1,
       }}
     >
+      <GlobalModal />
       <ScrollView
         className='px-3 mt-[15px]'
         style={{

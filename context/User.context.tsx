@@ -10,7 +10,11 @@ import {
 } from 'firebase/firestore';
 // import { db } from '../firebaseConfig';
 
-export const UserContext = createContext({});
+type ContextExports = {
+  testing: () => void;
+};
+
+export const UserContext = createContext<ContextExports | undefined>(undefined);
 
 function UserContextProvider({ children }: ChildProp) {
   const testing = () => {

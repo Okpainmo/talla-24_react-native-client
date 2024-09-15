@@ -8,7 +8,7 @@ import {
   Animated,
   TouchableOpacity,
 } from 'react-native';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useContext } from 'react';
 const Logo = require('@/assets/images/icon.png');
 import {
   default_light_backgrounds,
@@ -30,6 +30,8 @@ const {
   text_variant_5,
 } = default_light_texts || {};
 
+import { GlobalsContext } from '@/context/Globals.context';
+
 const Dialog = ({
   title,
   message,
@@ -39,6 +41,16 @@ const Dialog = ({
   message: string;
   buttonText: string;
 }) => {
+  const context = useContext(GlobalsContext);
+
+  // Ensure context is not undefined
+  if (!context) {
+    throw new Error('error: context error');
+  }
+
+  // Now it's safe to access `testing` after the type check
+  const { hideModal } = context;
+
   return (
     <View
       className='modal-content flex-1 w-full flex px-3 items-center justify-center relative'
@@ -69,7 +81,7 @@ const Dialog = ({
             width: '100%',
             cursor: 'pointer',
           }}
-          // onPress={() => testing()}
+          onPress={() => hideModal()}
         >
           <Text
             className='mt-[0.5px]'

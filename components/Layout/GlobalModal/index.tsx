@@ -1,60 +1,56 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-  Modal,
-  Image,
-  ImageBackground,
-  Animated,
-} from 'react-native';
-import React, { useEffect, useRef } from 'react';
+import React, { useContext } from 'react';
+import { Modal, StyleSheet, View } from 'react-native';
 import Preloader from './components/Preloader';
-const Logo = require('@/assets/images/icon.png');
-import {
-  default_light_backgrounds,
-  default_light_texts,
-} from '@/constants/colours';
 import SuccessPopUp from './components/SuccessPopUp';
 import CautionPopUp from './components/CautionPopUp';
 import ErrorPopUp from './components/ErrorPopUp';
 import Dialog from './components/Dialog';
-const {
-  background_variant_1,
-  background_variant_2,
-  background_variant_3,
-  background_variant_4,
-  background_variant_5,
-  background_variant_6,
-} = default_light_backgrounds || {};
-const {
-  text_variant_1,
-  text_variant_2,
-  text_variant_3,
-  text_variant_4,
-  text_variant_5,
-} = default_light_texts || {};
+import { GlobalsContext } from '@/context/Globals.context';
 
 const GlobalModal = () => {
+  const context = useContext(GlobalsContext);
+
+  // Ensure context is not undefined
+  if (!context) {
+    throw new Error(
+      'GlobalsContext must be used within a GlobalsContextProvider'
+    );
+  }
+
+  const {
+    isModalVisible,
+    currentModalComponent,
+    hideModal,
+    dialogData,
+    popUpMessage,
+  } = context;
+
   return (
     <Modal
-      //   animationType='slide'
-      //   animationType='none'
       animationType='fade'
       transparent={true}
-      visible={true}
-      // style={{ height: 300 }}
+      visible={isModalVisible}
+      onRequestClose={hideModal} // Close the modal when back button is pressed (for Android)
     >
-      {/* <Preloader /> */}
-      {/* <SuccessPopUp popUpMessage='successful request' /> */}
-      {/* <ErrorPopUp popUpMessage='request unsuccessful, please try again' /> */}
-      {/* <CautionPopUp popUpMessage='press again to exit' /> */}
-      <Dialog
-        title='Request sent successfully.'
-        message='Lorem ipsum dolor sit amet consectetur, adipisicing elit. Modi
-              repellendus corporis ex quos dolor unde repellendus corporis ex
-              quos dolor.'
-        buttonText='Got it, thanks!'
-      />
+      <View style={styles.modalContainer}>
+        {currentModalComponent === 'preloader' && <Preloader />}
+        {currentModalComponent === 'success' && (
+          <SuccessPopUp popUpMessage={popUpMessage} />
+        )}
+        {currentModalComponent === 'error' && (
+          <ErrorPopUp popUpMessage={popUpMessage} />
+        )}
+        {currentModalComponent === 'caution' && (
+          <CautionPopUp popUpMessage={popUpMessage} />
+        )}
+        {currentModalComponent === 'dialog' && (
+          <Dialog
+            title={dialogData.title}
+            message={dialogData.message}
+            buttonText={dialogData.buttonText}
+          />
+        )}
+      </View>
     </Modal>
   );
 };
@@ -62,13 +58,10 @@ const GlobalModal = () => {
 export default GlobalModal;
 
 const styles = StyleSheet.create({
-  container: {
+  modalContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  image: {
-    width: 40,
-    height: 40,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
   },
 });

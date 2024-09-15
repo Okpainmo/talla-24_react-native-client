@@ -12,8 +12,9 @@ import {
   KeyboardAvoidingView,
   TouchableOpacity,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -36,8 +37,26 @@ const {
   text_variant_5,
 } = default_light_texts || {};
 
-const ResetPasssword = () => {
-  const [showPassword, setShowPassword] = useState(false);
+import { AuthContext } from '@/context/Auth.context';
+
+const ResetPassword = () => {
+  const [resetPasswordForm, setResetPasswordForm] = useState({ email: '' });
+
+  const context = useContext(AuthContext);
+
+  // Ensure context is not undefined
+  if (!context) {
+    throw new Error(
+      'GlobalsContext must be used within a GlobalsContextProvider'
+    );
+  }
+
+  // Now it's safe to access `testing` after the type check
+  const { handleResetPassword, loading, setError, setLoading } = context;
+
+  const resetPassword = () => {
+    handleResetPassword(resetPasswordForm.email)
+  }
 
   return (
     <KeyboardAvoidingView
@@ -81,7 +100,7 @@ const ResetPasssword = () => {
             provided email address.
           </Text>
         </View>
-        <View className='sign-up-form-wrapper mt-[20px]'>
+        <View className='reset-password-form-wrapper mt-[20px]'>
           <View className='input-group email flex gap-y-2 mb-[20px]'>
             <Text
               className='label'
@@ -99,7 +118,7 @@ const ResetPasssword = () => {
                 // border-bottom: '1px solid',
                 // backgroundColor: `${background_variant_3}`,
                 borderRadius: 10,
-                color: `${text_variant_3}`,
+                color: `${text_variant_1}`,
                 borderColor: `${text_variant_3}`,
                 fontSize: 14,
                 fontFamily: 'font_400',
@@ -108,10 +127,10 @@ const ResetPasssword = () => {
               // value={loginForm.email}
               onChangeText={(text) => {
                 // console.log('email input in progress...');
-                // setLoginForm({
-                //   ...loginForm,
-                //   email: text,
-                // });
+                setResetPasswordForm({
+                  ...resetPasswordForm,
+                  email: text,
+                });
               }}
             />
           </View>
@@ -127,18 +146,23 @@ const ResetPasssword = () => {
               width: '100%',
               cursor: 'pointer',
             }}
-            onPress={() => router.push('/home')}
+            onPress={resetPassword}
+            disabled={loading} // Disable button while loading
           >
-            <Text
-              style={{
-                fontFamily: 'font_700',
-                textAlign: 'center',
-                fontSize: 14,
-                color: `${text_variant_5}`,
-              }}
-            >
-              Request Password Reset
-            </Text>
+            {loading ? (
+              <ActivityIndicator size='small' color='#dbeafe' />
+            ) : (
+              <Text
+                style={{
+                  fontFamily: 'font_700',
+                  textAlign: 'center',
+                  fontSize: 14,
+                  color: `${text_variant_5}`,
+                }}
+              >
+                Request Password Reset
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
         <View
@@ -171,4 +195,4 @@ const ResetPasssword = () => {
   );
 };
 
-export default ResetPasssword;
+export default ResetPassword

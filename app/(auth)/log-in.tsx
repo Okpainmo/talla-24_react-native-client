@@ -12,6 +12,7 @@ import {
   KeyboardAvoidingView,
   TouchableOpacity,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import React, { useState, useContext } from 'react';
 import { Link, router } from 'expo-router';
@@ -23,6 +24,8 @@ import {
 } from '@/constants/colours';
 
 import { AuthContext } from '@/context/Auth.context';
+import { GlobalsContext } from '@/context/Globals.context';
+
 import GlobalModal from '@/components/Layout/GlobalModal';
 
 const {
@@ -39,13 +42,32 @@ const {
   text_variant_5,
 } = default_light_texts || {};
 
-const RequestAccess = () => {
+const LogIn = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const { testing } = useContext(AuthContext);
+  const [loginForm, setLoginForm] = useState({
+    email: '',
+    password: '',
+  });
+
+  const globalsContext = useContext(GlobalsContext);
+  const authContext = useContext(AuthContext);
+
+  // Ensure context is not undefined
+  if (!authContext || !globalsContext) {
+    throw new Error('error: context error');
+  }
+
+  // Now it's safe to access `testing` after the type check
+  const { handleLogin, loading } = authContext;
+  const { showModal, hideModal } = globalsContext;
+
+  const loginUser = () => {
+    handleLogin(loginForm.email, loginForm.password); // Call the logIn function with email and password
+  };
 
   return (
     <KeyboardAvoidingView
-      className='relative'
+      // className='relative'
       behavior='padding'
       keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
       style={{
@@ -96,7 +118,7 @@ const RequestAccess = () => {
                 // border-bottom: '1px solid',
                 // backgroundColor: `${background_variant_3}`,
                 borderRadius: 10,
-                color: `${text_variant_3}`,
+                color: `${text_variant_1}`,
                 borderColor: `${text_variant_3}`,
                 fontSize: 14,
                 fontFamily: 'font_400',
@@ -105,10 +127,10 @@ const RequestAccess = () => {
               // value={loginForm.email}
               onChangeText={(text) => {
                 // console.log('email input in progress...');
-                // setLoginForm({
-                //   ...loginForm,
-                //   email: text,
-                // });
+                setLoginForm({
+                  ...loginForm,
+                  email: text,
+                });
               }}
             />
           </View>
@@ -129,19 +151,19 @@ const RequestAccess = () => {
                 // backgroundColor: `${background_variant_3}`,
                 borderRadius: 10,
                 borderColor: `${text_variant_3}`,
-                color: `${text_variant_3}`,
+                color: `${text_variant_1}`,
                 fontSize: 14,
                 fontFamily: 'font_400',
               }}
               placeholderTextColor={text_variant_3} // Set the placeholder color here
               secureTextEntry={!showPassword}
               // value={loginForm.email}
-              onChangeText={(text) => {
-                // console.log('email input in progress...');
-                // setLoginForm({
-                //   ...loginForm,
-                //   email: text,
-                // });
+              onChangeText={(password) => {
+                // console.log('password input in progress...');
+                setLoginForm({
+                  ...loginForm,
+                  password: password,
+                });
               }}
             />
             <View
@@ -152,7 +174,7 @@ const RequestAccess = () => {
                 onPress={() => setShowPassword(true)}
                 className={`flex ${showPassword ? 'hidden' : 'flex'}`}
               >
-                <Ionicons name='eye-outline' size={22} color={text_variant_3} />
+                <Ionicons name='eye-outline' size={22} color={text_variant_1} />
               </Pressable>
               <Pressable
                 onPress={() => setShowPassword(false)}
@@ -189,18 +211,23 @@ const RequestAccess = () => {
               width: '100%',
               cursor: 'pointer',
             }}
-            onPress={() => testing()}
+            onPress={loginUser}
+            disabled={loading} // Disable button while loading
           >
-            <Text
-              style={{
-                fontFamily: 'font_700',
-                textAlign: 'center',
-                fontSize: 14,
-                color: `${text_variant_5}`,
-              }}
-            >
-              Log in
-            </Text>
+            {loading ? (
+              <ActivityIndicator size='small' color='#dbeafe' />
+            ) : (
+              <Text
+                style={{
+                  fontFamily: 'font_700',
+                  textAlign: 'center',
+                  fontSize: 14,
+                  color: `${text_variant_5}`,
+                }}
+              >
+                Log in
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
         <View
@@ -233,4 +260,4 @@ const RequestAccess = () => {
   );
 };
 
-export default RequestAccess;
+export default LogIn;

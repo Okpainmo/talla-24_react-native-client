@@ -12,10 +12,12 @@ import {
   KeyboardAvoidingView,
   TouchableOpacity,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { AuthContext } from '@/context/Auth.context';
 
 import {
   default_light_backgrounds,
@@ -38,6 +40,41 @@ const {
 
 const LogIn = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const [signUpForm, setSignUpForm] = useState({
+    fullName: '',
+    email: '',
+    password: '',
+    confirmedPassword: '',
+  });
+
+  const context = useContext(AuthContext);
+
+  // Ensure context is not undefined
+  if (!context) {
+    throw new Error(
+      'GlobalsContext must be used within a GlobalsContextProvider'
+    );
+  }
+
+  // Now it's safe to access `testing` after the type check
+  const { handleSignUp, loading, setError, setLoading } = context;
+
+  const signUp = () => {
+    try {
+      handleSignUp(
+        signUpForm.fullName,
+        signUpForm.email,
+        signUpForm.password,
+        signUpForm.confirmedPassword
+      ); // Call the logIn function with email and password
+    } catch (error) {
+      setError('An error occurred while attempting to sign up.');
+      setLoading(false);
+      console.error('An error occurred:', error);
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -97,7 +134,7 @@ const LogIn = () => {
                 // border-bottom: '1px solid',
                 // backgroundColor: `${background_variant_3}`,
                 borderRadius: 10,
-                color: `${text_variant_3}`,
+                color: `${text_variant_1}`,
                 borderColor: `${text_variant_3}`,
                 fontSize: 14,
                 fontFamily: 'font_400',
@@ -106,10 +143,10 @@ const LogIn = () => {
               // value={loginForm.email}
               onChangeText={(text) => {
                 // console.log('email input in progress...');
-                // setLoginForm({
-                //   ...loginForm,
-                //   email: text,
-                // });
+                setSignUpForm({
+                  ...signUpForm,
+                  fullName: text,
+                });
               }}
             />
           </View>
@@ -130,7 +167,7 @@ const LogIn = () => {
                 // border-bottom: '1px solid',
                 // backgroundColor: `${background_variant_3}`,
                 borderRadius: 10,
-                color: `${text_variant_3}`,
+                color: `${text_variant_1}`,
                 borderColor: `${text_variant_3}`,
                 fontSize: 14,
                 fontFamily: 'font_400',
@@ -139,10 +176,10 @@ const LogIn = () => {
               // value={loginForm.email}
               onChangeText={(text) => {
                 // console.log('email input in progress...');
-                // setLoginForm({
-                //   ...loginForm,
-                //   email: text,
-                // });
+                setSignUpForm({
+                  ...signUpForm,
+                  email: text,
+                });
               }}
             />
           </View>
@@ -163,19 +200,19 @@ const LogIn = () => {
                 // backgroundColor: `${background_variant_3}`,
                 borderRadius: 10,
                 borderColor: `${text_variant_3}`,
-                color: `${text_variant_3}`,
+                color: `${text_variant_1}`,
                 fontSize: 14,
                 fontFamily: 'font_400',
               }}
               placeholderTextColor={text_variant_3} // Set the placeholder color here
               secureTextEntry={!showPassword}
               // value={loginForm.email}
-              onChangeText={(text) => {
+              onChangeText={(password) => {
                 // console.log('email input in progress...');
-                // setLoginForm({
-                //   ...loginForm,
-                //   email: text,
-                // });
+                setSignUpForm({
+                  ...signUpForm,
+                  password: password,
+                });
               }}
             />
             <View
@@ -186,7 +223,7 @@ const LogIn = () => {
                 onPress={() => setShowPassword(true)}
                 className={`flex ${showPassword ? 'hidden' : 'flex'}`}
               >
-                <Ionicons name='eye-outline' size={22} color={text_variant_3} />
+                <Ionicons name='eye-outline' size={22} color={text_variant_1} />
               </Pressable>
               <Pressable
                 onPress={() => setShowPassword(false)}
@@ -217,19 +254,19 @@ const LogIn = () => {
                 // backgroundColor: `${background_variant_3}`,
                 borderRadius: 10,
                 borderColor: `${text_variant_3}`,
-                color: `${text_variant_3}`,
+                color: `${text_variant_1}`,
                 fontSize: 14,
                 fontFamily: 'font_400',
               }}
               placeholderTextColor={text_variant_3} // Set the placeholder color here
-              secureTextEntry={!showPassword}
+              secureTextEntry={!showConfirmPassword}
               // value={loginForm.email}
-              onChangeText={(text) => {
+              onChangeText={(password) => {
                 // console.log('email input in progress...');
-                // setLoginForm({
-                //   ...loginForm,
-                //   email: text,
-                // });
+                setSignUpForm({
+                  ...signUpForm,
+                  confirmedPassword: password,
+                });
               }}
             />
             <View
@@ -237,14 +274,14 @@ const LogIn = () => {
             right-[15px]'
             >
               <Pressable
-                onPress={() => setShowPassword(true)}
-                className={`flex ${showPassword ? 'hidden' : 'flex'}`}
+                onPress={() => setShowConfirmPassword(true)}
+                className={`flex ${showConfirmPassword ? 'hidden' : 'flex'}`}
               >
-                <Ionicons name='eye-outline' size={22} color={text_variant_3} />
+                <Ionicons name='eye-outline' size={22} color={text_variant_1} />
               </Pressable>
               <Pressable
-                onPress={() => setShowPassword(false)}
-                className={`flex ${showPassword ? 'flex' : 'hidden'}`}
+                onPress={() => setShowConfirmPassword(false)}
+                className={`flex ${showConfirmPassword ? 'flex' : 'hidden'}`}
               >
                 <Ionicons
                   name='eye-off-outline'
@@ -266,18 +303,24 @@ const LogIn = () => {
               width: '100%',
               cursor: 'pointer',
             }}
-            onPress={() => router.push('/home')}
+            onPress={signUp}
+            disabled={loading} // Disable button while loading
+            // onPress={() => router.push('/home')}
           >
-            <Text
-              style={{
-                fontFamily: 'font_700',
-                textAlign: 'center',
-                fontSize: 14,
-                color: `${text_variant_5}`,
-              }}
-            >
-              Sign up/Request Access
-            </Text>
+            {loading ? (
+              <ActivityIndicator size='small' color='#dbeafe' />
+            ) : (
+              <Text
+                style={{
+                  fontFamily: 'font_700',
+                  textAlign: 'center',
+                  fontSize: 14,
+                  color: `${text_variant_5}`,
+                }}
+              >
+                Sign up/Request Access
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
         <View

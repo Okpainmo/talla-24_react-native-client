@@ -3,6 +3,9 @@ const { getDefaultConfig } = require('expo/metro-config');
 module.exports = (() => {
   const config = getDefaultConfig(__dirname);
 
+  // addition for firebase
+  config.resolver.assetExts.push('cjs');
+
   const { transformer, resolver } = config;
 
   config.transformer = {
@@ -14,9 +17,6 @@ module.exports = (() => {
     assetExts: resolver.assetExts.filter((ext) => ext !== 'svg'),
     sourceExts: [...resolver.sourceExts, 'svg'],
   };
-
-  // addition for firebase
-  config.resolver.assetExts.push('cjs');
 
   return config;
 })();

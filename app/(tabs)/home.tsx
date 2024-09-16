@@ -7,15 +7,21 @@ import {
   Pressable,
   TouchableOpacity,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import { Link, router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import {
   default_light_backgrounds,
   default_light_texts,
 } from '@/constants/colours';
 import { Ionicons } from '@expo/vector-icons';
+// @ts-ignore - false error
 import EmptyActivityLogSVG from '../../assets/images/img-1.svg';
+import { GlobalsContext } from '@/context/Globals.context';
+import { AuthContext } from '@/context/Auth.context';
+
+import GlobalModal from '@/components/Layout/GlobalModal';
 
 const {
   background_variant_1,
@@ -23,6 +29,7 @@ const {
   background_variant_3,
   background_variant_4,
   background_variant_5,
+  background_variant_6,
 } = default_light_backgrounds || {};
 const {
   text_variant_1,
@@ -31,102 +38,25 @@ const {
   text_variant_4,
   text_variant_5,
 } = default_light_texts || {};
-
-interface SuccessModalProps {
-  showModal: boolean;
-  setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
-}
-function AboutModal({ showModal, setShowModal }: SuccessModalProps) {
-  return (
-    <Modal
-      animationType='slide'
-      // transparent={true}
-      visible={showModal}
-      // style={{ height: 300 }}
-    >
-      <View
-        className='modal-header flex flex-row items-center px-3 pb-[7px]'
-        style={{
-          backgroundColor: background_variant_1,
-          marginTop: Platform.OS === 'android' ? 10 : 0,
-          // paddingBottom: Platform.OS === 'android' ? 10 : 0,
-        }}
-        // style={{  }}
-      >
-        <Pressable
-          onPress={() => setShowModal(false)}
-          style={{ borderColor: text_variant_3 }}
-          className={`mr-6 w-[35px] h-[35px] rounded-full border flex items-center justify-center`}
-        >
-          <Ionicons name='close-outline' size={25} color={text_variant_3} />
-        </Pressable>
-        <Text
-          className='text-[25px] h-[40px] mt-1'
-          style={{ color: text_variant_1, fontFamily: 'font_800' }}
-        >
-          Talla 24.
-        </Text>
-      </View>
-      <ScrollView className='modal-content py-[10px] top-[30px] h-[100%] overflow-y-auto w-full absolute bottom-0 px-3 mt-6 mb-4'>
-        <View className='pb-[100px]'>
-          <Text
-            className='text-[12px] leading-[25px]'
-            style={{ fontFamily: 'font_400' }}
-          >
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus et
-            qui reprehenderit soluta, iusto incidunt in eius culpa laudantium
-            dolore voluptas nisi, quaerat cupiditate similique exercitationem,
-            modi vitae voluptate? Natus ab deleniti dolorum odio officia
-            voluptatibus commodi laborum sed facilis deserunt error quia quas
-            rem provident porro cum inventore, ipsam, hic soluta ut? Quaerat
-            iusto soluta ratione, similique in quas voluptate nobis quis
-            doloremque vel odit dolores non perferendis qui perspiciatis, dolore
-            magnam. Velit qui repellendus quia quis modi nemo explicabo dolorem
-            facere delectus recusandae obcaecati officiis cupiditate tempora,
-            aperiam, amet, blanditiis deleniti impedit asperiores. Voluptas
-            deserunt porro quisquam sunt!
-          </Text>
-          <Text
-            className='text-[12px] leading-[25px] mt-6'
-            style={{ fontFamily: 'font_400' }}
-          >
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus et
-            qui reprehenderit soluta, iusto incidunt in eius culpa laudantium
-            dolore voluptas nisi, quaerat cupiditate similique exercitationem,
-            modi vitae voluptate? Natus ab deleniti dolorum odio officia
-            voluptatibus commodi laborum sed facilis deserunt error quia quas.
-          </Text>
-          <Text
-            className='text-[12px] leading-[25px] mt-6'
-            style={{ fontFamily: 'font_400' }}
-          >
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus et
-            qui reprehenderit soluta, iusto incidunt in eius culpa laudantium
-            dolore voluptas nisi, quaerat cupiditate similique exercitationem,
-            modi vitae voluptate? Natus ab deleniti dolorum odio officia
-            voluptatibus commodi laborum sed facilis deserunt error quia quas.
-            dolore voluptas nisi, quaerat cupiditate similique exercitationem,
-            modi vitae voluptate? Natus ab deleniti dolorum odio officia
-            voluptatibus commodi laborum sed facilis deserunt error quia quas.
-          </Text>
-          <Text
-            className='text-[12px] leading-[25px] mt-6'
-            style={{ fontFamily: 'font_400' }}
-          >
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus et
-            qui reprehenderit soluta, iusto incidunt in eius culpa laudantium
-            dolore voluptas nisi, quaerat cupiditate similique exercitationem,
-            modi vitae voluptate? Natus ab deleniti dolorum odio officia
-            voluptatibus commodi laborum sed facilis deserunt error quia quas.
-          </Text>
-        </View>
-      </ScrollView>
-    </Modal>
-  );
-}
+import AboutModal from '@/components/AboutModal';
 
 const Home = () => {
-  const [showModal, setShowModal] = useState(false);
+  const [showAboutModal, setShowAboutModal] = useState(false);
+  const globalsContext = useContext(GlobalsContext);
+  const authContext = useContext(AuthContext);
+
+  // Ensure context is not undefined
+  if (!globalsContext || !authContext) {
+    throw new Error('error: context error');
+  }
+
+  // Now it's safe to access `testing` after the type check
+  const { showModal, hideModal } = globalsContext;
+  const { loading, handleLogout } = authContext;
+
+  // useEffect(() => {
+  //   showModal('preloader');
+  // }, []);
 
   return (
     <View
@@ -134,8 +64,12 @@ const Home = () => {
         backgroundColor: background_variant_1,
         paddingTop: Platform.OS === 'android' ? 50 : 0,
       }}
-      className='w-full flex-1'
+      className='w-full flex-1 relative'
     >
+      <AboutModal
+        showAboutModal={showAboutModal}
+        setShowAboutModal={setShowAboutModal}
+      />
       <View
         className={`${
           Platform.OS === 'ios' && 'hidden'
@@ -180,7 +114,7 @@ const Home = () => {
             />
           </Pressable>
           <Pressable
-            onPress={() => setShowModal(true)}
+            onPress={() => setShowAboutModal(true)}
             // style={{ borderColor: text_variant_1 }}
             // className={`mb-10 w-[40px] h-[40px] rounded-full border flex items-center justify-center`}
           >
@@ -193,8 +127,6 @@ const Home = () => {
         </View>
       </View>
       <ScrollView className='relative top-[-5px]'>
-        <AboutModal showModal={showModal} setShowModal={setShowModal} />
-
         <View className='px-3 pt-[20px]'>
           <View
             className='rounded-[15px] py-5'
@@ -339,17 +271,31 @@ const Home = () => {
                   }}
                   asChild
                 >
-                  <TouchableOpacity>
+                  <TouchableOpacity
+                    className='rounded-[10px] min-w-[80px] px-4 flex items-center 
+                justify-center py-[0] min-h-[40px] mr-2'
+                    style={{
+                      // fontFamily: 'font_200',
+                      backgroundColor: background_variant_2,
+                    }}
+                    // onPress={() =>
+                    //   handleApproveAccessRequest(`${each.id}`, `${each.email}`)
+                    // }
+                  >
                     <Text
                       className='text-[12px]'
-                      style={{ color: text_variant_5, fontFamily: 'font_500' }}
+                      style={{
+                        color: text_variant_5,
+                        fontFamily: 'font_500',
+                      }}
                     >
                       Stream
                     </Text>
                   </TouchableOpacity>
                 </Link>
                 <Link
-                  href={'/log-in'}
+                  // href={'/log-in'}
+                  href='/home'
                   className='rounded-[10px] px-4 flex items-center justify-center py-3 
                 mr-2'
                   style={{
@@ -358,13 +304,25 @@ const Home = () => {
                   }}
                   asChild
                 >
-                  <TouchableOpacity>
-                    <Text
-                      className='text-[12px] text-blue-700'
-                      style={{ fontFamily: 'font_500' }}
-                    >
-                      Log-out
-                    </Text>
+                  <TouchableOpacity
+                    className='rounded-[10px] min-w-[80px] px-4 flex items-center justify-center py-[0] 
+                min-h-[40px] mr-2'
+                    style={{
+                      // fontFamily: 'font_200',
+                      backgroundColor: background_variant_5,
+                    }}
+                    onPress={() => handleLogout()}
+                  >
+                    {loading ? (
+                      <ActivityIndicator size='small' color={text_variant_2} />
+                    ) : (
+                      <Text
+                        className='text-[12px] text-blue-700'
+                        style={{ fontFamily: 'font_500' }}
+                      >
+                        Logout
+                      </Text>
+                    )}
                   </TouchableOpacity>
                 </Link>
               </View>

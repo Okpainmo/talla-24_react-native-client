@@ -11,6 +11,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   TouchableOpacity,
+  ActivityIndicator,
   Modal,
 } from 'react-native';
 import React, { useState, useContext } from 'react';
@@ -23,6 +24,9 @@ import {
   default_light_backgrounds,
   default_light_texts,
 } from '@/constants/colours';
+
+import { GlobalsContext } from '@/context/Globals.context';
+import GlobalModal from '@/components/Layout/GlobalModal';
 
 const {
   background_variant_1,
@@ -42,7 +46,22 @@ const {
 const Profile = () => {
   const [showNameInput, setShowNameInput] = useState(false);
   const [showEmailInput, setShowEmailInput] = useState(false);
-  const { testing } = useContext(UserContext);
+  const [updateForm, setUpdateForm] = useState({
+    userName: '',
+    email: '',
+  });
+  const context = useContext(UserContext);
+
+  // Ensure context is not undefined
+  if (!context) {
+    throw new Error(
+      'GlobalsContext must be used within a GlobalsContextProvider'
+    );
+  }
+
+  // Now it's safe to access `testing` after the type check
+  const { handleUpdateUser, isUpdating, error, setIsUpdating, setError } =
+    context;
 
   return (
     <KeyboardAvoidingView
@@ -54,6 +73,7 @@ const Profile = () => {
       behavior='padding'
       keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}
     >
+      <GlobalModal />
       <View
         className='header flex flex-row items-center px-3 w-full'
         style={{ backgroundColor: background_variant_1 }}
@@ -77,37 +97,6 @@ const Profile = () => {
         </Text>
       </View>
       <ScrollView className='flex flex-1 w-full pt-[20px]'>
-        {/* <View
-          className='flex flex-1 px-3'
-          style={{ backgroundColor: background_variant_1 }}
-        > */}
-        {/* <View className='user-avatar-wrapper relative flex flex-row justify-center 
-        w-full mb-10 mt-6'>
-          <View>
-            <Image
-              style={{
-                width: 100,
-                objectFit: 'contain',
-                height: 100,
-                borderRadius: 50,
-              }}
-              source={mockAvatar1}
-              // resizeMethod='scale'
-              accessibilityLabel='user avatar'
-            />
-            <View
-              className='absolute bottom-[5px] right-0 w-[30px] h-[30px] rounded-full flex flex-row 
-            items-center justify-center'
-              style={{ backgroundColor: background_variant_2 }}
-            >
-              <Ionicons
-                name='camera-outline'
-                size={22}
-                color={text_variant_2}
-              />
-            </View>
-          </View>
-        </View> */}
         <View
           className='user-avatar-wrapper relative flex flex-row justify-center 
         w-full mb-6 mt-6'
@@ -158,29 +147,41 @@ const Profile = () => {
                     placeholderTextColor={text_variant_3} // Set the placeholder color here
                     // value='Andrew James Okpainmo'
                     // value={loginForm.password}
-                    // onChangeText={(text) => {
-                    //   // console.log('password input in progress...');
-
-                    //   setLoginForm({
-                    //     ...loginForm,
-                    //     password: text,
-                    //   });
-                    // }}
+                    onChangeText={(text) => {
+                      // console.log('email input in progress...');
+                      setUpdateForm({
+                        ...updateForm,
+                        userName: text,
+                      });
+                    }}
                   />
                 </View>
                 <TouchableOpacity
-                  onPress={() => setShowNameInput(false)}
-                  className='px-4 py-2 text-[12px] mt-4 w-[100px] rounded-[10px]'
+                  className='mt-4 rounded-[10px] w-[80px] px-4 flex items-center justify-center py-[0] 
+                min-h-[40px] mr-2'
                   style={{
+                    // fontFamily: 'font_200',
                     backgroundColor: background_variant_5,
+                    // color: text_variant_3,
+                  }}
+                  onPress={() => {
+                    setShowNameInput(false);
+                    handleUpdateUser(`123`, `userName`, updateForm);
                   }}
                 >
-                  <Text
-                    className='text-center'
-                    style={{ fontFamily: 'font_500', color: text_variant_2 }}
-                  >
-                    Update
-                  </Text>
+                  {isUpdating === 'userName' ? (
+                    <ActivityIndicator size='small' color='#473bf0' />
+                  ) : (
+                    <Text
+                      className='text-[12px]'
+                      style={{
+                        color: text_variant_2,
+                        fontFamily: 'font_500',
+                      }}
+                    >
+                      update
+                    </Text>
+                  )}
                 </TouchableOpacity>
               </View>
               <Text
@@ -200,8 +201,7 @@ const Profile = () => {
               </Text>
             </View>
             <Pressable
-              // onPress={() => setShowNameInput(true)}
-              onPress={() => testing()}
+              onPress={() => setShowNameInput(true)}
               className='absolute right-3 z-20'
               // style={{ backgroundColor: background_variant_2 }}
             >
@@ -251,29 +251,41 @@ const Profile = () => {
                     placeholderTextColor={text_variant_3} // Set the placeholder color here
                     // value='Andrew James Okpainmo'
                     // value={loginForm.password}
-                    // onChangeText={(text) => {
-                    //   // console.log('password input in progress...');
-
-                    //   setLoginForm({
-                    //     ...loginForm,
-                    //     password: text,
-                    //   });
-                    // }}
+                    onChangeText={(text) => {
+                      // console.log('email input in progress...');
+                      setUpdateForm({
+                        ...updateForm,
+                        email: text,
+                      });
+                    }}
                   />
                 </View>
                 <TouchableOpacity
-                  onPress={() => setShowEmailInput(false)}
-                  className='px-4 py-2 text-[12px] mt-4 w-[100px] rounded-[10px]'
+                  className='mt-4 rounded-[10px] w-[80px] px-4 flex items-center justify-center py-[0] 
+                min-h-[40px] mr-2'
                   style={{
+                    // fontFamily: 'font_200',
                     backgroundColor: background_variant_5,
+                    // color: text_variant_3,
+                  }}
+                  onPress={() => {
+                    setShowEmailInput(false);
+                    handleUpdateUser(`123`, `email`, updateForm);
                   }}
                 >
-                  <Text
-                    className='text-center'
-                    style={{ fontFamily: 'font_500', color: text_variant_2 }}
-                  >
-                    Update
-                  </Text>
+                  {isUpdating === 'email' ? (
+                    <ActivityIndicator size='small' color='#473bf0' />
+                  ) : (
+                    <Text
+                      className='text-[12px]'
+                      style={{
+                        color: text_variant_2,
+                        fontFamily: 'font_500',
+                      }}
+                    >
+                      update
+                    </Text>
+                  )}
                 </TouchableOpacity>
               </View>
               <Text

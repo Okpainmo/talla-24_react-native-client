@@ -5,7 +5,7 @@ import {
 } from '@react-navigation/native';
 // import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
-import { StatusBar } from 'react-native';
+import { StatusBar, View, Text } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
@@ -44,6 +44,7 @@ import {
   Poppins_800ExtraBold,
   Poppins_900Black,
 } from '@expo-google-fonts/poppins';
+import GlobalsContextProvider from '@/context/Globals.context';
 
 // restating font-name for easier retraction and remembrance during development
 const font_100 = Poppins_100Thin;
@@ -89,21 +90,23 @@ export default function RootLayout() {
         // backgroundColor={background_variant_1}
         barStyle={'dark-content'}
       />
-      <AuthContextProvider>
-        <UserContextProvider>
-          <ThemeProvider
-            value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
-          >
-            <Stack>
-              <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
-              <Stack.Screen name='(auth)' options={{ headerShown: false }} />
-              <Stack.Screen name='(misc)' options={{ headerShown: false }} />
-              <Stack.Screen name='index' options={{ headerShown: false }} />
-              {/* <Stack.Screen name="+not-found" /> */}
-            </Stack>
-          </ThemeProvider>
-        </UserContextProvider>
-      </AuthContextProvider>
+      <GlobalsContextProvider>
+        <AuthContextProvider>
+          <UserContextProvider>
+            <ThemeProvider
+              value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
+            >
+              <Stack>
+                <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
+                <Stack.Screen name='(auth)' options={{ headerShown: false }} />
+                <Stack.Screen name='(misc)' options={{ headerShown: false }} />
+                <Stack.Screen name='index' options={{ headerShown: false }} />
+                {/* <Stack.Screen name="+not-found" /> */}
+              </Stack>
+            </ThemeProvider>
+          </UserContextProvider>
+        </AuthContextProvider>
+      </GlobalsContextProvider>
     </>
   );
 }

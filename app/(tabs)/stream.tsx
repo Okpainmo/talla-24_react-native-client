@@ -13,10 +13,13 @@ import {
   TouchableOpacity,
   Modal,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 const mockAvatar1 = require('../../assets/images/img-3.jpg');
+
+import { GlobalsContext } from '@/context/Globals.context';
+import GlobalModal from '@/components/Layout/GlobalModal';
 
 import {
   default_light_backgrounds,
@@ -39,6 +42,20 @@ const {
 } = default_light_texts || {};
 
 const Profile = () => {
+  const globalsContext = useContext(GlobalsContext);
+
+  // Ensure context is not undefined
+  if (!globalsContext) {
+    throw new Error('error: context error');
+  }
+
+  // Now it's safe to access `testing` after the type check
+  const { showModal, hideModal } = globalsContext;
+
+  // useEffect(() => {
+  //   showModal('preloader');
+  // }, []);
+
   const [showNameInput, setShowNameInput] = useState(false);
   const [showEmailInput, setShowEmailInput] = useState(false);
 

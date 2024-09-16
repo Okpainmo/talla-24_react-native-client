@@ -84,7 +84,7 @@ const Page = () => {
           asChild
         >
           <TouchableOpacity>
-            <Text style={{ color: text_variant_1, fontFamily: 'font_600' }}>
+            <Text style={{ color: text_variant_2, fontFamily: 'font_600' }}>
               Log in
             </Text>
           </TouchableOpacity>

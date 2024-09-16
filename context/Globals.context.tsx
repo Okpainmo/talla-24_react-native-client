@@ -56,11 +56,13 @@ function GlobalsContextProvider({ children }: ChildProp) {
   const showModal = (
     component: ModalComponents,
     popUpMessage?: string | undefined,
-    dialogData?: {
-      title: string;
-      message: string;
-      buttonText: string;
-    }
+    dialogData?:
+      | {
+          title: string;
+          message: string;
+          buttonText: string;
+        }
+      | undefined
   ) => {
     setCurrentModalComponent(component);
     setIsModalVisible(true);

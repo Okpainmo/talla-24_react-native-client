@@ -51,7 +51,7 @@ const CautionPopUp = ({ popUpMessage }: { popUpMessage: string }) => {
         <Ionicons
           className='mr-1'
           name='alert-circle-outline'
-          size={25}
+          size={23}
           //   color='#ef4444'
           style={{ color: text_variant_2 }}
         />

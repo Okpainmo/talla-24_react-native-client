@@ -51,7 +51,7 @@ const SuccessPopUp = ({ popUpMessage }: { popUpMessage: string }) => {
         <Ionicons
           className='mr-1'
           name='checkmark-circle'
-          size={25}
+          size={23}
           color='#22c55e'
           //   style={{ color: text_variant_2 }}
         />

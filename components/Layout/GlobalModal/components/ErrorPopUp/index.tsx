@@ -51,7 +51,7 @@ const ErrorPopUp = ({ popUpMessage }: { popUpMessage: string }) => {
         <Ionicons
           className='mr-1'
           name='close-circle'
-          size={25}
+          size={23}
           color='#ef4444'
           //   style={{ color: text_variant_2 }}
         />

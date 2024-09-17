@@ -6,19 +6,22 @@ import React, {
   useContext,
 } from 'react';
 import { Link, router } from 'expo-router';
-import { GlobalsContext } from '@/context/Globals.context';
-export const AuthContext = createContext<AuthContextExports | undefined>(
-  undefined
-);
-import { auth } from '../firebaseConfig.ts';
+import { GlobalsContext } from './Globals.context';
+import { UserContext } from './User.context';
+
+import { auth } from '../firebaseConfig';
 import {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
+export const AuthContext = createContext<AuthContextExports | undefined>(
+  undefined
+);
 interface AuthContextExports {
-  handleLogin: (email: string, password: string) => void;
+  handleLogin: (email: string, password: string, name: string) => void;
   handleLogout: () => void;
   handleSignUp: (
     fullName: string,
@@ -40,15 +43,21 @@ interface AuthContextExports {
 }
 
 function AuthContextProvider({ children }: ChildProp) {
+  const userContext = useContext(UserContext);
   const globalsContext = useContext(GlobalsContext);
 
   // Ensure context is not undefined
   if (!globalsContext) {
-    throw new Error('error: context error');
+    throw new Error('error: globals context error');
   }
 
-  // Now it's safe to access `testing` after the type check
+  if (!userContext) {
+    throw new Error('error: user context error');
+  }
+
+  // Now it's safe to access values after the type check
   const { showModal, hideModal } = globalsContext;
+  const { storeUserData, getUserData, handleCreateUser } = userContext;
   const [isDeclining, setIsDeclining] = useState<string | null>(null);
   const [isApproving, setIsApproving] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -131,20 +140,38 @@ function AuthContextProvider({ children }: ChildProp) {
 
           console.log(user);
 
-          if (user) {
+          const currentTimeInMilliseconds = Date.now();
+
+          if (user && user.email) {
+            handleCreateUser({
+              userName: fullName,
+              email: user.email,
+              id: user.uid,
+              accessRequestStatus: { status: 'Pending', approvedBy: null },
+              createdAt: `${currentTimeInMilliseconds}`,
+            });
+
+            storeUserData({
+              userName: fullName,
+              id: user.uid,
+              email: user?.email,
+            });
+
+            console.log('Sign-up completed successfully');
+
             setLoading(false);
             router.push('/home');
-
-            console.log('Log-in completed successfully');
           } else {
             setLoading(false);
           }
+
           // ...
         })
         .catch((error) => {
           // const errorCode = error.code;
           // const errorMessage = error.message;
 
+          setLoading(false);
           console.error('errorCode:', error.code);
           console.error('errorMessage:', error.message);
 
@@ -165,7 +192,11 @@ function AuthContextProvider({ children }: ChildProp) {
     }
   };
 
-  const handleLogin = async (email: string, password: string) => {
+  const handleLogin = async (
+    email: string,
+    password: string,
+    fullName: string
+  ) => {
     try {
       if (email == '' && password == '') {
         showModal('dialog', undefined, {
@@ -191,13 +222,12 @@ function AuthContextProvider({ children }: ChildProp) {
       // Validate password using regex
       if (!passwordRegex.test(password)) {
         showModal('dialog', undefined, {
-          title: 'Error!',
-          message: `Password must meet the following conditions:\n
-\n1. Be at least 8 characters long.\n
-2. Contain one uppercase letter.\n
-3. Contain one lowercase letter.\n
-4. Contain one number.\n
-5. Contain one special character.`,
+          title: 'Invalid Password!',
+          message: `Your correct 8 digit password meets the following conditions:\n
+1. Contains one uppercase letter.\n
+2. Contains one lowercase letter.\n
+3. Contains one number.\n
+4. Contains one special character.`,
           buttonText: 'Got it, thanks!',
         });
 
@@ -213,15 +243,19 @@ function AuthContextProvider({ children }: ChildProp) {
 
           console.log(user);
 
-          if (user) {
+          if (user && user.email) {
+            storeUserData({
+              userName: fullName,
+              id: user.uid,
+              email: user?.email,
+            });
+            console.log('Log-in completed successfully');
+
             setLoading(false);
             router.push('/home');
-
-            console.log('Log-in completed successfully');
           }
           // ...
         })
-
         .catch((error) => {
           // const errorCode = error.code;
           // const errorMessage = error.message;
@@ -263,12 +297,13 @@ function AuthContextProvider({ children }: ChildProp) {
 
       return;
     } catch {
+      setLoading(false);
+
       showModal('dialog', undefined, {
         title: 'Error!',
         message: 'An error occurred while attempting to log in.',
         buttonText: 'Got it, thanks!',
       });
-      setLoading(false);
 
       return;
     }
@@ -281,7 +316,7 @@ function AuthContextProvider({ children }: ChildProp) {
       await auth.signOut();
 
       setLoading(false);
-      router.push('/log-in');
+      // router.push('/log-in');
 
       console.log('Log-out completed successfully');
 

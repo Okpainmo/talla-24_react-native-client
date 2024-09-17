@@ -19,7 +19,7 @@ type ContextExports = {
       title: string;
       message: string;
       buttonText: string;
-    }
+    } | null
   ) => void;
   hideModal: () => void;
   // showPreloader: () => void;
@@ -56,13 +56,11 @@ function GlobalsContextProvider({ children }: ChildProp) {
   const showModal = (
     component: ModalComponents,
     popUpMessage?: string | undefined,
-    dialogData?:
-      | {
-          title: string;
-          message: string;
-          buttonText: string;
-        }
-      | undefined
+    dialogData?: {
+      title: string;
+      message: string;
+      buttonText: string;
+    } | null
   ) => {
     setCurrentModalComponent(component);
     setIsModalVisible(true);

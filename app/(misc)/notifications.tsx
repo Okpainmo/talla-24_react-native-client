@@ -14,12 +14,23 @@ import {
   Modal,
   ActivityIndicator,
 } from 'react-native';
+import {
+  collection,
+  addDoc,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  doc,
+  query,
+  where,
+} from 'firebase/firestore';
 import React, { useState, useContext, useEffect } from 'react';
 import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 const mockAvatar1 = require('../../assets/images/img-3.jpg');
 import { GlobalsContext } from '@/context/Globals.context';
 import { AuthContext } from '@/context/Auth.context';
+import { UserContext } from '@/context/User.context';
 
 import GlobalModal from '@/components/Layout/GlobalModal';
 import { accessRequests } from '@/data/mockAccessRequestsList';
@@ -43,17 +54,22 @@ const {
   text_variant_4,
   text_variant_5,
 } = default_light_texts || {};
+import { auth } from '../../firebaseConfig';
+import { getAuth } from 'firebase/auth';
 
-const ResetPassword = () => {
+const Notifications = () => {
+  getAuth().onAuthStateChanged((user) => {
+    if (!user) router.replace('/');
+  });
+
   const [showPassword, setShowPassword] = useState(false);
 
   const globalsContext = useContext(GlobalsContext);
-
-  // Ensure context is not undefined
   const authContext = useContext(AuthContext);
+  const userContext = useContext(UserContext);
 
   // Ensure context is not undefined
-  if (!authContext || !globalsContext) {
+  if (!authContext || !globalsContext || !userContext) {
     throw new Error('error: context error');
   }
 
@@ -68,10 +84,19 @@ const ResetPassword = () => {
 
   // Now it's safe to access `testing` after the type check
   const { showModal, hideModal } = globalsContext;
+  const { fetchUsers, users } = userContext;
 
-  // useEffect(() => {
-  //   showModal('preloader');
-  // }, []);
+  useEffect(() => {
+    showModal('preloader');
+
+    fetchUsers();
+  }, []);
+
+  if (users) {
+    users.forEach((doc: any) => {
+      console.log(doc.data());
+    });
+  }
 
   return (
     <View
@@ -231,4 +256,4 @@ const ResetPassword = () => {
   );
 };
 
-export default ResetPassword;
+export default Notifications;

@@ -25,6 +25,7 @@ import {
 
 import { AuthContext } from '@/context/Auth.context';
 import { GlobalsContext } from '@/context/Globals.context';
+import { UserContext } from '@/context/User.context';
 
 import GlobalModal from '@/components/Layout/GlobalModal';
 
@@ -51,18 +52,25 @@ const LogIn = () => {
 
   const globalsContext = useContext(GlobalsContext);
   const authContext = useContext(AuthContext);
+  const userContext = useContext(UserContext);
 
   // Ensure context is not undefined
-  if (!authContext || !globalsContext) {
+  if (!authContext || !globalsContext || !userContext) {
     throw new Error('error: context error');
   }
 
   // Now it's safe to access `testing` after the type check
   const { handleLogin, loading } = authContext;
   const { showModal, hideModal } = globalsContext;
+  const { getUserData } = userContext;
 
-  const loginUser = () => {
-    handleLogin(loginForm.email, loginForm.password); // Call the logIn function with email and password
+  const loginUser = async () => {
+    const user = await getUserData();
+    console.log(user);
+
+    if (user) {
+      handleLogin(loginForm.email, loginForm.password, user?.userName); // Call the logIn function with email and password
+    }
   };
 
   return (

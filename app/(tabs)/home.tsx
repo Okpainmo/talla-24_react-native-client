@@ -20,8 +20,11 @@ import { Ionicons } from '@expo/vector-icons';
 import EmptyActivityLogSVG from '../../assets/images/img-1.svg';
 import { GlobalsContext } from '@/context/Globals.context';
 import { AuthContext } from '@/context/Auth.context';
+import { UserContext } from '@/context/User.context';
 
 import GlobalModal from '@/components/Layout/GlobalModal';
+import { auth } from '../../firebaseConfig';
+import { getAuth } from 'firebase/auth';
 
 const {
   background_variant_1,
@@ -39,24 +42,50 @@ const {
   text_variant_5,
 } = default_light_texts || {};
 import AboutModal from '@/components/AboutModal';
+import Emoji from '@/components/Emoji';
 
 const Home = () => {
+  getAuth().onAuthStateChanged((user) => {
+    if (!user) router.replace('/');
+  });
+
+  // const auth = getAuth();
+  // const user = auth.currentUser;
+
+  // useEffect(() => {
+  //   console.log(user);
+  // }, []);
+
   const [showAboutModal, setShowAboutModal] = useState(false);
+  const [loggedInUser, setLoggedInUser] = useState<{
+    userName: string;
+    id: string;
+    email: string;
+  } | null>(null);
   const globalsContext = useContext(GlobalsContext);
   const authContext = useContext(AuthContext);
+  const userContext = useContext(UserContext);
 
   // Ensure context is not undefined
-  if (!globalsContext || !authContext) {
+  if (!globalsContext || !authContext || !userContext) {
     throw new Error('error: context error');
   }
 
   // Now it's safe to access `testing` after the type check
   const { showModal, hideModal } = globalsContext;
   const { loading, handleLogout } = authContext;
+  const { getUserData } = userContext;
 
-  // useEffect(() => {
-  //   showModal('preloader');
-  // }, []);
+  async function getUser() {
+    const user = await getUserData();
+
+    if (user) {
+      setLoggedInUser(user);
+    }
+  }
+  useEffect(() => {
+    getUser();
+  }, []);
 
   return (
     <View
@@ -132,6 +161,23 @@ const Home = () => {
             className='rounded-[15px] py-5'
             style={{ backgroundColor: background_variant_2 }}
           >
+            <View className='px-5 flex-row'>
+              <Text
+                className='text-base mr-[4px]'
+                style={{ fontFamily: 'font_500', color: text_variant_5 }}
+              >
+                Hello {loggedInUser?.userName.split(' ')[0]}
+              </Text>
+              <Emoji label='waving emoji to welcome user' symbol='👋' />
+            </View>
+            <View className='px-5 mt-6'>
+              <Text
+                className='text-[22px]'
+                style={{ fontFamily: 'font_600', color: text_variant_5 }}
+              >
+                Talla 24
+              </Text>
+            </View>
             <View className='hardware-status-wrapper px-5 flex flex-row'>
               <Text style={{ color: text_variant_5, fontFamily: 'font_400' }}>
                 Hardware Status:
@@ -142,14 +188,6 @@ const Home = () => {
                 style={{ fontFamily: 'font_500', color: text_variant_5 }}
               >
                 offline
-              </Text>
-            </View>
-            <View className='px-5 mt-8'>
-              <Text
-                className='text-2xl'
-                style={{ fontFamily: 'font_600', color: text_variant_5 }}
-              >
-                Talla 24
               </Text>
             </View>
           </View>

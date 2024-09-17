@@ -21,6 +21,9 @@ const mockAvatar1 = require('../../assets/images/img-3.jpg');
 import { GlobalsContext } from '@/context/Globals.context';
 import GlobalModal from '@/components/Layout/GlobalModal';
 
+import { auth } from '../../firebaseConfig';
+import { getAuth } from 'firebase/auth';
+
 import {
   default_light_backgrounds,
   default_light_texts,
@@ -42,6 +45,9 @@ const {
 } = default_light_texts || {};
 
 const Profile = () => {
+  getAuth().onAuthStateChanged((user) => {
+    if (!user) router.replace('/');
+  });
   const globalsContext = useContext(GlobalsContext);
 
   // Ensure context is not undefined

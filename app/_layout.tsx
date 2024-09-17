@@ -91,8 +91,8 @@ export default function RootLayout() {
         barStyle={'dark-content'}
       />
       <GlobalsContextProvider>
-        <AuthContextProvider>
-          <UserContextProvider>
+        <UserContextProvider>
+          <AuthContextProvider>
             <ThemeProvider
               value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
             >
@@ -104,8 +104,8 @@ export default function RootLayout() {
                 {/* <Stack.Screen name="+not-found" /> */}
               </Stack>
             </ThemeProvider>
-          </UserContextProvider>
-        </AuthContextProvider>
+          </AuthContextProvider>
+        </UserContextProvider>
       </GlobalsContextProvider>
     </>
   );

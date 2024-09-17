@@ -14,11 +14,10 @@ import {
   ActivityIndicator,
   Modal,
 } from 'react-native';
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 const mockAvatar1 = require('../../assets/images/img-3.jpg');
-import { UserContext } from '@/context/User.context';
 
 import {
   default_light_backgrounds,
@@ -26,7 +25,10 @@ import {
 } from '@/constants/colours';
 
 import { GlobalsContext } from '@/context/Globals.context';
+import { UserContext } from '@/context/User.context';
 import GlobalModal from '@/components/Layout/GlobalModal';
+import { auth } from '../../firebaseConfig';
+import { getAuth } from 'firebase/auth';
 
 const {
   background_variant_1,
@@ -44,25 +46,51 @@ const {
 } = default_light_texts || {};
 
 const Profile = () => {
+  getAuth().onAuthStateChanged((user) => {
+    if (!user) router.replace('/');
+  });
+
+  const [loggedInUser, setLoggedInUser] = useState<{
+    userName: string;
+    id: string;
+    email: string;
+  } | null>(null);
   const [showNameInput, setShowNameInput] = useState(false);
   const [showEmailInput, setShowEmailInput] = useState(false);
   const [updateForm, setUpdateForm] = useState({
     userName: '',
     email: '',
   });
-  const context = useContext(UserContext);
+
+  const globalsContext = useContext(GlobalsContext);
+  const userContext = useContext(UserContext);
 
   // Ensure context is not undefined
-  if (!context) {
-    throw new Error(
-      'GlobalsContext must be used within a GlobalsContextProvider'
-    );
+  if (!globalsContext || !userContext) {
+    throw new Error('error: context error');
   }
 
   // Now it's safe to access `testing` after the type check
-  const { handleUpdateUser, isUpdating, error, setIsUpdating, setError } =
-    context;
+  const { showModal, hideModal } = globalsContext;
+  const {
+    handleUpdateUser,
+    isUpdating,
+    error,
+    setIsUpdating,
+    setError,
+    getUserData,
+  } = userContext;
 
+  async function getUser() {
+    const user = await getUserData();
+
+    if (user) {
+      setLoggedInUser(user);
+    }
+  }
+  useEffect(() => {
+    getUser();
+  }, []);
   return (
     <KeyboardAvoidingView
       className='flex flex-1 justify-center items-center flex-col w-full'
@@ -165,8 +193,13 @@ const Profile = () => {
                     // color: text_variant_3,
                   }}
                   onPress={() => {
-                    setShowNameInput(false);
-                    handleUpdateUser(`123`, `userName`, updateForm);
+                    // setShowNameInput(false);
+                    console.log(updateForm);
+                    handleUpdateUser(
+                      `${loggedInUser?.id}`,
+                      `userName`,
+                      updateForm
+                    );
                   }}
                 >
                   {isUpdating === 'userName' ? (
@@ -190,7 +223,7 @@ const Profile = () => {
                 } mb-[15px]`}
                 style={{ color: text_variant_1, fontFamily: 'font_400' }}
               >
-                Andrew James Okpainmo
+                {loggedInUser?.userName}
               </Text>
               <Text
                 className='user-status text-[12px] mt-[3px] w-[80%] flex flex-wrap'
@@ -201,7 +234,7 @@ const Profile = () => {
               </Text>
             </View>
             <Pressable
-              onPress={() => setShowNameInput(true)}
+              onPress={() => setShowNameInput(!showNameInput)}
               className='absolute right-3 z-20'
               // style={{ backgroundColor: background_variant_2 }}
             >
@@ -269,8 +302,13 @@ const Profile = () => {
                     // color: text_variant_3,
                   }}
                   onPress={() => {
-                    setShowEmailInput(false);
-                    handleUpdateUser(`123`, `email`, updateForm);
+                    // setShowEmailInput(false);
+                    console.log(updateForm);
+                    handleUpdateUser(
+                      `${loggedInUser?.id}`,
+                      `email`,
+                      updateForm
+                    );
                   }}
                 >
                   {isUpdating === 'email' ? (
@@ -294,7 +332,7 @@ const Profile = () => {
                 } mb-[15px]`}
                 style={{ color: text_variant_1, fontFamily: 'font_400' }}
               >
-                okpainmoandrew@gmail.com
+                {loggedInUser?.email}
               </Text>
               <Text
                 className='user-status text-[12px] mt-[3px] w-[80%] flex flex-wrap'
@@ -305,8 +343,8 @@ const Profile = () => {
               </Text>
             </View>
             <Pressable
-              onPress={() => setShowEmailInput(true)}
-              className='absolute right-3 z-20'
+              onPress={() => setShowEmailInput(!showEmailInput)}
+              className='absolute right-3 z-20 hidden'
               // style={{ backgroundColor: background_variant_2 }}
             >
               <Ionicons

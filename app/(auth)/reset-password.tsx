@@ -38,8 +38,14 @@ const {
 } = default_light_texts || {};
 
 import { AuthContext } from '@/context/Auth.context';
+import { auth } from '../../firebaseConfig';
+import { getAuth } from 'firebase/auth';
 
 const ResetPassword = () => {
+  getAuth().onAuthStateChanged((user) => {
+    if (!user) router.replace('/');
+  });
+
   const [resetPasswordForm, setResetPasswordForm] = useState({ email: '' });
 
   const context = useContext(AuthContext);

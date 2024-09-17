@@ -44,7 +44,7 @@ const ErrorPopUp = ({ popUpMessage }: { popUpMessage: string }) => {
           </View>
         </ImageBackground> */}
       <View
-        className='flex flex-row items-center rounded-[15px] min-w-[150px] px-3 py-1 self-start 
+        className='flex flex-row items-center rounded-[10px] min-w-[150px] px-3 py-1 self-start 
         justify-evenly'
         style={{ backgroundColor: background_variant_5 }}
       >
@@ -56,7 +56,7 @@ const ErrorPopUp = ({ popUpMessage }: { popUpMessage: string }) => {
           //   style={{ color: text_variant_2 }}
         />
         <Text
-          className='text-[12px] ml-1'
+          className='text-[12px] ml-1 translate-y-[1.2px]'
           style={{ color: text_variant_2, fontFamily: 'font_400' }}
         >
           {popUpMessage}

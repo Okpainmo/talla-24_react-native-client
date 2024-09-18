@@ -149,7 +149,10 @@ function AuthContextProvider({ children }: ChildProp) {
               id: user.uid,
               accessRequestStatus: { status: 'Pending', approvedBy: null },
               createdAt: `${currentTimeInMilliseconds}`,
-            });
+            })
+
+            {/* see the handleCreateUser function to see where/how the userDocumentID was
+            stored with AsyncStorage */}
 
             storeUserData({
               userName: fullName,

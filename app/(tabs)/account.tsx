@@ -29,6 +29,7 @@ import { UserContext } from '@/context/User.context';
 import GlobalModal from '@/components/Layout/GlobalModal';
 import { auth } from '../../firebaseConfig';
 import { getAuth } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const {
   background_variant_1,
@@ -50,17 +51,13 @@ const Profile = () => {
     if (!user) router.replace('/');
   });
 
-  const [loggedInUser, setLoggedInUser] = useState<{
-    userName: string;
-    id: string;
-    email: string;
-  } | null>(null);
   const [showNameInput, setShowNameInput] = useState(false);
   const [showEmailInput, setShowEmailInput] = useState(false);
   const [updateForm, setUpdateForm] = useState({
     userName: '',
     email: '',
   });
+  // const [userDocumentId, setUserDocumentId] = useState('');
 
   const globalsContext = useContext(GlobalsContext);
   const userContext = useContext(UserContext);
@@ -79,17 +76,15 @@ const Profile = () => {
     setIsUpdating,
     setError,
     getUserData,
+    getUserDocumentId,
+    firestoreUserDocumentId,
+    fetchUser,
+    firestoreUser,
   } = userContext;
 
-  async function getUser() {
-    const user = await getUserData();
-
-    if (user) {
-      setLoggedInUser(user);
-    }
-  }
   useEffect(() => {
-    getUser();
+    fetchUser();
+    getUserDocumentId();
   }, []);
   return (
     <KeyboardAvoidingView
@@ -192,11 +187,11 @@ const Profile = () => {
                     backgroundColor: background_variant_5,
                     // color: text_variant_3,
                   }}
-                  onPress={() => {
+                  onPress={async () => {
                     // setShowNameInput(false);
                     console.log(updateForm);
                     handleUpdateUser(
-                      `${loggedInUser?.id}`,
+                      `${firestoreUserDocumentId}`,
                       `userName`,
                       updateForm
                     );
@@ -223,7 +218,7 @@ const Profile = () => {
                 } mb-[15px]`}
                 style={{ color: text_variant_1, fontFamily: 'font_400' }}
               >
-                {loggedInUser?.userName}
+                {firestoreUser?.userName}
               </Text>
               <Text
                 className='user-status text-[12px] mt-[3px] w-[80%] flex flex-wrap'
@@ -305,7 +300,7 @@ const Profile = () => {
                     // setShowEmailInput(false);
                     console.log(updateForm);
                     handleUpdateUser(
-                      `${loggedInUser?.id}`,
+                      `${firestoreUser?.id}`,
                       `email`,
                       updateForm
                     );
@@ -332,7 +327,7 @@ const Profile = () => {
                 } mb-[15px]`}
                 style={{ color: text_variant_1, fontFamily: 'font_400' }}
               >
-                {loggedInUser?.email}
+                {firestoreUser?.email}
               </Text>
               <Text
                 className='user-status text-[12px] mt-[3px] w-[80%] flex flex-wrap'

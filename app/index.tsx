@@ -23,7 +23,7 @@ const {
   text_variant_5,
 } = default_light_texts || {};
 
-const Page = () => {
+const IndexScreen = () => {
   const [assets] = useAssets([require('@/assets/videos/intro-video.mp4')]);
 
   return (
@@ -94,4 +94,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default IndexScreen;

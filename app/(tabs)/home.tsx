@@ -49,12 +49,12 @@ const Home = () => {
     if (!user) router.replace('/');
   });
 
-  // const auth = getAuth();
-  // const user = auth.currentUser;
+  const auth = getAuth();
+  const user = auth.currentUser;
 
-  // useEffect(() => {
-  //   console.log(user);
-  // }, []);
+  useEffect(() => {
+    console.log('current user', user);
+  }, []);
 
   const [showAboutModal, setShowAboutModal] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState<{
@@ -74,17 +74,20 @@ const Home = () => {
   // Now it's safe to access `testing` after the type check
   const { showModal, hideModal } = globalsContext;
   const { loading, handleLogout } = authContext;
-  const { getUserData } = userContext;
+  const { fetchUser, getUserData, firestoreUser } = userContext;
 
-  async function getUser() {
-    const user = await getUserData();
+  // async function getUser() {
+  //   const user = await getUserData();
 
-    if (user) {
-      setLoggedInUser(user);
-    }
-  }
+  //   if (user) {
+  //     console.log("home user", user)
+  //     setLoggedInUser(user);
+  //   }
+  // }
+
   useEffect(() => {
-    getUser();
+    fetchUser();
+    // getUser();
   }, []);
 
   return (
@@ -166,7 +169,7 @@ const Home = () => {
                 className='text-base mr-[4px]'
                 style={{ fontFamily: 'font_500', color: text_variant_5 }}
               >
-                Hello {loggedInUser?.userName.split(' ')[0]}
+                Hello {firestoreUser?.userName.split(" ")[0]}
               </Text>
               <Emoji label='waving emoji to welcome user' symbol='👋' />
             </View>

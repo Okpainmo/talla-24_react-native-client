@@ -73,78 +73,85 @@ const Notifications = () => {
     throw new Error('error: context error');
   }
 
-  // Now it's safe to access `testing` after the type check
-  const {
-    handleApproveAccessRequest,
-    handleDeclineAccessRequest,
-    loading,
-    isDeclining,
-    isApproving,
-  } = authContext;
 
-  // Now it's safe to access `testing` after the type check
-  const { showModal, hideModal } = globalsContext;
-  const { fetchUsers, users } = userContext;
+type UserSpecs = {
+  id: string;
+  userName: string;
+  email: string;
+  createdAt: string;
+  accessRequestStatus: {
+    status: 'Pending' | 'Approved' | 'Rejected';
+    approvedBy: string | null; // ISO date format as string
+  };
+};
 
-  useEffect(() => {
-    showModal('preloader');
+// Now it's safe to access `testing` after the type check
+const {
+  handleApproveAccessRequest,
+  handleDeclineAccessRequest,
+  loading,
+  isDeclining,
+  isApproving,
+} = authContext;
 
-    fetchUsers();
-  }, []);
+// Now it's safe to access `testing` after the type check
+const { showModal, hideModal } = globalsContext;
+const { fetchUsers, users } = userContext;
 
-  if (users) {
-    users.forEach((doc: any) => {
-      console.log(doc.data());
-    });
-  }
+useEffect(() => {
+  showModal('preloader');
 
-  return (
+  fetchUsers();
+}, []);
+
+return (
+  <View
+    style={{
+      backgroundColor: background_variant_1,
+      paddingTop: Platform.OS === 'android' ? 50 : 0,
+    }}
+    className='w-full flex-1'
+  >
     <View
-      style={{
-        backgroundColor: background_variant_1,
-        paddingTop: Platform.OS === 'android' ? 50 : 0,
-      }}
-      className='w-full flex-1'
+      className='header flex flex-row items-center px-3 pb-[7px]'
+      style={{ backgroundColor: background_variant_1 }}
     >
-      <View
-        className='header flex flex-row items-center px-3 pb-[7px]'
-        style={{ backgroundColor: background_variant_1 }}
+      <Pressable
+        onPress={() => router.back()}
+        style={{ borderColor: text_variant_3 }}
+        className={`mr-6 w-[40px] h-[40px] rounded-full border flex items-center justify-center`}
       >
-        <Pressable
-          onPress={() => router.back()}
-          style={{ borderColor: text_variant_3 }}
-          className={`mr-6 w-[40px] h-[40px] rounded-full border flex items-center justify-center`}
-        >
-          <Ionicons
-            name='chevron-back-outline'
-            size={22}
-            color={text_variant_3}
-          />
-        </Pressable>
+        <Ionicons
+          name='chevron-back-outline'
+          size={22}
+          color={text_variant_3}
+        />
+      </Pressable>
+      <Text
+        className='text-[25px] mt-1'
+        style={{ color: text_variant_1, fontFamily: 'font_800' }}
+      >
+        Notifications.
+      </Text>
+    </View>
+    <ScrollView
+      className='px-3'
+      style={{ backgroundColor: background_variant_1 }}
+    >
+      <View className='pb-[60px] mt-[50px] hidden'>
         <Text
-          className='text-[25px] mt-1'
-          style={{ color: text_variant_1, fontFamily: 'font_800' }}
+          className='text-[14px] leading-[25px] text-center'
+          style={{ fontFamily: 'font_400' }}
         >
-          Notifications.
+          There are no notifications to view...
         </Text>
       </View>
-      <ScrollView
-        className='px-3'
-        style={{ backgroundColor: background_variant_1 }}
-      >
-        <View className='pb-[60px] mt-[50px] hidden'>
-          <Text
-            className='text-[14px] leading-[25px] text-center'
-            style={{ fontFamily: 'font_400' }}
-          >
-            There are no notifications to view...
-          </Text>
-        </View>
-        <View className='notifications-rack flex mt-3 pb-[100px]'>
-          {accessRequests.map((each) => {
+      <View className='notifications-rack flex mt-3 pb-[100px]'>
+        {users &&
+          users.map((user: UserSpecs) => {
             return (
               <View
-                key={each.id}
+                key={user.id}
                 className='access-request-card w-full flex-1 border rounded-[10px] 
             p-3 mb-4'
                 style={{ borderColor: text_variant_3 }}
@@ -185,17 +192,39 @@ const Notifications = () => {
                         fontFamily: 'font_600',
                       }}
                     >
-                      {each.user}
+                      {user.userName}
                     </Text>
-                    <Text
-                      className='text-[11px] mt-[3px]'
-                      style={{
-                        color: text_variant_1,
-                        fontFamily: 'font_400',
-                      }}
-                    >
-                      {each.email}
-                    </Text>
+                    <View className='flex flex-row'>
+                      <Text
+                        className='text-[11px] mt-[3px]'
+                        style={{
+                          color: text_variant_1,
+                          fontFamily: 'font_400',
+                        }}
+                      >
+                        {user.email}
+                      </Text>
+                      <Text
+                        className='text-[11px] mt-[3px]'
+                        style={{
+                          color: text_variant_1,
+                          fontFamily: 'font_400',
+                        }}
+                      >
+                        {" "} | {" "}
+                      </Text>
+                      <Text
+                        className={`text-[11px] mt-[3px] 
+                          ${user.accessRequestStatus.status === 'Rejected' ? 'text-red-700'
+                            : user.accessRequestStatus.status === 'Approved' ? 'text-green-700' : 'text-red-700'}`}
+                        style={{
+                          color: text_variant_1,
+                          fontFamily: 'font_400',
+                        }}
+                      >
+                        {user.accessRequestStatus.status}
+                      </Text>
+                    </View>
                   </View>
                 </View>
                 <View className='flex-1 w-full flex-row mt-4'>
@@ -207,10 +236,10 @@ const Notifications = () => {
                       backgroundColor: background_variant_2,
                     }}
                     onPress={() =>
-                      handleApproveAccessRequest(`${each.id}`, `${each.email}`)
+                      handleApproveAccessRequest(`${user.id}`, `${user.email}`)
                     }
                   >
-                    {isApproving === each.id ? (
+                    {isApproving === user.id ? (
                       <ActivityIndicator size='small' color='#dbeafe' />
                     ) : (
                       <Text
@@ -232,10 +261,10 @@ const Notifications = () => {
                       backgroundColor: background_variant_5,
                     }}
                     onPress={() =>
-                      handleDeclineAccessRequest(`${each.id}`, `${each.email}`)
+                      handleDeclineAccessRequest(`${user.id}`, `${user.email}`)
                     }
                   >
-                    {isDeclining === each.id ? (
+                    {isDeclining === user.id ? (
                       <ActivityIndicator size='small' color={text_variant_2} />
                     ) : (
                       <Text
@@ -250,10 +279,10 @@ const Notifications = () => {
               </View>
             );
           })}
-        </View>
-      </ScrollView>
-    </View>
-  );
+      </View>
+    </ScrollView>
+  </View>
+);
 };
 
 export default Notifications;

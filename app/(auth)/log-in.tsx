@@ -65,12 +65,13 @@ const LogIn = () => {
   const { getUserData } = userContext;
 
   const loginUser = async () => {
-    const user = await getUserData();
-    console.log(user);
+    // const user = await getUserData();
+    // console.log(user);
+    // console.log(loginForm.email, loginForm.password, user?.userName)
 
-    if (user) {
-      handleLogin(loginForm.email, loginForm.password, user?.userName); // Call the logIn function with email and password
-    }
+    // if (user) {
+    handleLogin(loginForm.email, loginForm.password, ''); // Call the logIn function with email and password
+    // }
   };
 
   return (

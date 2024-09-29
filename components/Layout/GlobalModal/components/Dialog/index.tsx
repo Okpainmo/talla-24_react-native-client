@@ -53,8 +53,8 @@ const Dialog = ({
 
   return (
     <View
-      className='modal-content flex-1 w-full flex px-3 items-center justify-center relative'
-      style={{ backgroundColor: background_variant_6 }}
+      className='modal-content flex-1 w-full flex px-3 items-center justify-center relative h-screen'
+      // style={{ backgroundColor: background_variant_6 }}
     >
       <View
         className='px-5 py-5 flex rounded-[15px] w-full'

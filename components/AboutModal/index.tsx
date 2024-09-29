@@ -49,7 +49,7 @@ function AboutModal({ showAboutModal, setShowAboutModal }: AboutModalProps) {
       <View
         className={`modal-background-overlay ${
           showAboutModal ? 'flex' : 'hidden'
-        } absolute top-0 left-0 right-0 z-[100] h-screen`}
+        } absolute top-0 left-0 right-0 z-[100] h-screen flex-1`}
         style={{
           backgroundColor: background_variant_6,
           //   paddingTop: 50,

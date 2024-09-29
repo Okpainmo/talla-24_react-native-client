@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import React from 'react';
 import {
   default_light_backgrounds,
@@ -21,11 +21,11 @@ const {
   text_variant_5,
 } = default_light_texts || {};
 
-const CautionPopUp = ({ popUpMessage }: { popUpMessage: string }) => {
+const LoadingPopUp = ({ popUpMessage }: { popUpMessage: string }) => {
   return (
     <View
       className='modal-content flex-1 w-full flex flex-row justify-center relative top-[15px]'
-      //   style={{ backgroundColor: background_variant_6 }}
+      // style={{ backgroundColor: background_variant_6 }}
     >
       {/* <ImageBackground
           style={{
@@ -44,17 +44,18 @@ const CautionPopUp = ({ popUpMessage }: { popUpMessage: string }) => {
           </View>
         </ImageBackground> */}
       <View
-        className='flex flex-row items-center rounded-[10px] min-w-[150px] px-3 py-1 self-start 
+        className='flex flex-row items-center rounded-[10px] min-w-[150px] px-3 py-2 self-start 
 `       justify-evenly'
-        style={{ backgroundColor: background_variant_5 }}
+        style={{ backgroundColor: background_variant_1 }}
       >
-        <Ionicons
+        {/* <Ionicons
           className='mr-1'
           name='alert-circle-outline'
           size={23}
           //   color='#ef4444'
           style={{ color: text_variant_2 }}
-        />
+        /> */}
+        <ActivityIndicator size='small' color={text_variant_2} />
         <Text
           className='text-[12px] ml-1 translate-y-[1.2px]'
           style={{ color: text_variant_2, fontFamily: 'font_400' }}
@@ -66,6 +67,6 @@ const CautionPopUp = ({ popUpMessage }: { popUpMessage: string }) => {
   );
 };
 
-export default CautionPopUp;
+export default LoadingPopUp;
 
 const styles = StyleSheet.create({});

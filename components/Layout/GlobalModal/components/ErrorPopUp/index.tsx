@@ -44,9 +44,9 @@ const ErrorPopUp = ({ popUpMessage }: { popUpMessage: string }) => {
           </View>
         </ImageBackground> */}
       <View
-        className='flex flex-row items-center rounded-[10px] min-w-[150px] px-3 py-1 self-start 
+        className='flex flex-row items-center rounded-[10px] min-w-[150px] px-3 py-2 self-start 
         justify-evenly'
-        style={{ backgroundColor: background_variant_5 }}
+        style={{ backgroundColor: background_variant_1 }}
       >
         <Ionicons
           className='mr-1'

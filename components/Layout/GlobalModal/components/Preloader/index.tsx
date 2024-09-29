@@ -60,24 +60,8 @@ const Preloader = () => {
   return (
     <View
       className='modal-content flex-1 w-full flex px-3 items-center justify-center relative'
-      style={{ backgroundColor: background_variant_6 }}
+      // style={{ backgroundColor: background_variant_6 }}
     >
-      {/* <ImageBackground
-          style={{
-            width: 60,
-            height: 60,
-            // borderRadius: 50,
-          }}
-          source={Logo}
-          // resizeMethod='scale'
-          // accessibilityLabel='user avatar'
-        >
-          <View
-            className='w-full h-full flex justify-center items-center'
-            // style={{ backgroundColor: background_variant_6 }}
-          >
-          </View>
-        </ImageBackground> */}
       <View style={styles.container}>
         <Animated.Image
           source={Logo} // Replace with your image URL

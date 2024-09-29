@@ -7,7 +7,9 @@ import React, {
 } from 'react';
 import { Link, router } from 'expo-router';
 import { GlobalsContext } from './Globals.context';
-import { UserContext } from './User.context';
+// import { MailContext } from './Mail.context';
+import { UserContext, UserSpecs } from './User.context';
+import { db } from '../firebaseConfig';
 
 import { auth } from '../firebaseConfig';
 import {
@@ -16,11 +18,46 @@ import {
   signInWithEmailAndPassword,
 } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  collection,
+  addDoc,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  doc,
+  query,
+  where,
+} from 'firebase/firestore';
 
 export const AuthContext = createContext<AuthContextExports | undefined>(
   undefined
 );
 interface AuthContextExports {
+  signUpForm: {
+    fullName: string;
+    email: string;
+    password: string;
+    confirmedPassword: string;
+  };
+
+  setSignUpForm: Dispatch<
+    SetStateAction<{
+      fullName: string;
+      email: string;
+      password: string;
+      confirmedPassword: string;
+    }>
+  >;
+  loginForm: {
+    email: string;
+    password: string;
+  };
+  setLoginForm: Dispatch<
+    SetStateAction<{
+      email: string;
+      password: string;
+    }>
+  >;
   handleLogin: (email: string, password: string, name: string) => void;
   handleLogout: () => void;
   handleSignUp: (
@@ -30,21 +67,24 @@ interface AuthContextExports {
     confirmedPassword: string
   ) => void;
   handleResetPassword: (email: string) => void;
-  handleApproveAccessRequest: (requestId: string, email: string) => void;
-  handleDeclineAccessRequest: (requestId: string, email: string) => void;
+  handleApproveAccessRequest: (userData: UserSpecs, process: "approving access" | "revoking access" | "declining access" | "revoking admin privilege" | "approving admin privilege") => void;
+  handleDeclineAccessRequest: (userData: UserSpecs, process: "approving access" | "revoking access" | "declining access" | "revoking admin privilege" | "approving admin privilege") => void;
+  handleRevokeAccessRequest: (userData: UserSpecs, process: "approving access" | "revoking access" | "declining access" | "revoking admin privilege" | "approving admin privilege") => void;
+  handleMakeAdmin: (userData: UserSpecs, process: "approving access" | "revoking access" | "declining access" | "revoking admin privilege" | "approving admin privilege") => void;
+  handleRemoveAdmin: (userData: UserSpecs, process: "approving access" | "revoking access" | "declining access" | "revoking admin privilege" | "approving admin privilege") => void;
   loading: boolean;
-  isDeclining: string | null;
-  isApproving: string | null;
+  // isDeclining: string | null;
+  isProcessing: {process: string, userDocumentId: string} | null;
   error: string | null;
   setError: Dispatch<SetStateAction<string | null>>;
   setLoading: Dispatch<SetStateAction<boolean>>;
-  setIsDeclining: Dispatch<SetStateAction<string | null>>;
-  setIsApproving: Dispatch<SetStateAction<string | null>>;
+  setIsProcessing: Dispatch<SetStateAction<{process: string, userDocumentId: string} | null>>;
 }
 
 function AuthContextProvider({ children }: ChildProp) {
   const userContext = useContext(UserContext);
   const globalsContext = useContext(GlobalsContext);
+  // const mailContext = useContext(MailContext);
 
   // Ensure context is not undefined
   if (!globalsContext) {
@@ -55,11 +95,38 @@ function AuthContextProvider({ children }: ChildProp) {
     throw new Error('error: user context error');
   }
 
+  // if(!mailContext) {
+  //   throw new Error('error: mail context error');
+  // }
+
+  const [signUpForm, setSignUpForm] = useState({
+    fullName: '',
+    email: '',
+    password: '',
+    confirmedPassword: '',
+  });
+
+  const [loginForm, setLoginForm] = useState({
+    email: '',
+    password: '',
+  });
+
   // Now it's safe to access values after the type check
   const { showModal, hideModal } = globalsContext;
-  const { storeUserData, getUserData, handleCreateUser } = userContext;
-  const [isDeclining, setIsDeclining] = useState<string | null>(null);
-  const [isApproving, setIsApproving] = useState<string | null>(null);
+  const {
+    storeUserData,
+    getUserData,
+    getUserDataFromDB,
+    handleCreateUser,
+    fetchUsers,
+  } = userContext;
+  // const {
+  //   sendApprovalEmail,
+  //   sendRejectionEmail,
+  //   sendRevocationEmail,
+  // } = mailContext;
+  // const [isDeclining, setIsProcessing] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState<{process: string, userDocumentId: string} | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -133,65 +200,120 @@ function AuthContextProvider({ children }: ChildProp) {
 
       // const auth = getAuth();
 
-      await createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
+      await createUserWithEmailAndPassword(auth, email, password).then(
+        (userCredential) => {
           // Signed up
           const user = userCredential.user;
 
-          console.log(user);
+          // console.log(user);
 
           const currentTimeInMilliseconds = Date.now();
 
           if (user && user.email) {
+            /* see the handleCreateUser function to see where/how the userDocumentID was
+            stored with AsyncStorage */
+
             handleCreateUser({
               userName: fullName,
               email: user.email,
               id: user.uid,
-              accessRequestStatus: { status: 'Pending', approvedBy: null },
+              accessRequestStatus: {
+                status: 'Pending',
+                approvedBy: '',
+                approvedAt: '',
+                declinedBy: '',
+                declinedAt: '',
+                revokedAt: '',
+                revokedBy: '',
+                madeAdminBy: '',
+                madeAdminAt: '',
+                adminRevokedBy: '',
+                adminRevokedAt: '',
+              },
               createdAt: `${currentTimeInMilliseconds}`,
-            })
-
-            {/* see the handleCreateUser function to see where/how the userDocumentID was
-            stored with AsyncStorage */}
+              isAdmin: false,
+              userDocumentId: '',
+              profileImage: '',
+            });
 
             storeUserData({
               userName: fullName,
               id: user.uid,
               email: user?.email,
             });
+            // console.log('Sign-up completed successfully');
 
-            console.log('Sign-up completed successfully');
+            // setLoading(false);
+          }
+        }
+      );
 
+      const user = auth.currentUser;
+
+      if (user && user.email) {
+        // console.log('my user', user);
+        const userData = await getUserDataFromDB(user.email);
+
+        if (userData) {
+          // console.log("user data", userData);
+
+          if (userData.accessRequestStatus.status !== 'Approved') {
             setLoading(false);
-            router.push('/home');
+
+            // console.log("access not granted")
+            showModal('dialog', undefined, {
+              title: 'Access Is Restricted!',
+              message:
+                "Your sign-up was successful, but access to the app is currently restricted. You will be notified via email if your request is approved or rejected. Remember to check your spam folder if you don't get a response quickly enough.",
+              buttonText: 'Got it, thanks!',
+            });
           } else {
             setLoading(false);
+
+            router.navigate('/home');
           }
+        }
+      }
 
-          // ...
-        })
-        .catch((error) => {
-          // const errorCode = error.code;
-          // const errorMessage = error.message;
+      setLoading(false);
 
-          setLoading(false);
-          console.error('errorCode:', error.code);
-          console.error('errorMessage:', error.message);
+      setSignUpForm({
+        fullName: '',
+        email: '',
+        password: '',
+        confirmedPassword: '',
+      });
 
-          // ..
-        });
+      return;
 
       // setLoading(false);
 
       // Simulate login process
       // setTimeout(() => {
-      //   console.log('Login process completed successfully');
+      // console.log('signUp process completed successfully');
 
       // }, 3000);
-    } catch (error) {
-      setError('An error occurred while attempting to sign up.');
+    } catch (error: any) {
+      if (error.code === 'auth/email-already-in-use') {
+        showModal('dialog', undefined, {
+          title: 'Auth Error!',
+          message: 'An account already exists with this email address.',
+          buttonText: 'Got it, thanks!',
+        });
+
+        setLoading(false);
+      }
+
       setLoading(false);
-      console.error('error:', error);
+
+      setSignUpForm({
+        fullName: '',
+        email: '',
+        password: '',
+        confirmedPassword: '',
+      });
+
+      // console.error('error:', error);
     }
   };
 
@@ -240,75 +362,96 @@ function AuthContextProvider({ children }: ChildProp) {
       setLoading(true);
 
       await signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          // Signed up
-          const user = userCredential.user;
 
-          console.log(user);
+      const user = auth.currentUser;
 
-          if (user && user.email) {
-            storeUserData({
-              userName: fullName,
-              id: user.uid,
-              email: user?.email,
-            });
-            console.log('Log-in completed successfully');
+      if (user && user.email) {
+        const userData = await getUserDataFromDB(user.email);
 
-            setLoading(false);
-            router.push('/home');
-          }
-          // ...
-        })
-        .catch((error) => {
-          // const errorCode = error.code;
-          // const errorMessage = error.message;
+        if (userData) {
+          // console.log('user data:', userData);
+          // console.log(userData.userName);
 
-          if (error.code === 'auth/invalid-credential') {
-            showModal('dialog', undefined, {
-              title: 'Auth Error!',
-              message:
-                'Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later.',
-              buttonText: 'Try again!',
-            });
-
-            return;
-          }
-
-          if (error.code === 'auth/too-many-requests') {
-            showModal('dialog', undefined, {
-              title: 'Auth Error!',
-              message: 'Invalid credentials provided',
-              buttonText: 'Try again!',
-            });
-
-            return;
-          }
-
-          showModal('dialog', undefined, {
-            title: 'Auth Error!',
-            message: error.message,
-            buttonText: 'Try again!',
+          storeUserData({
+            userName: userData.userName,
+            id: userData.id,
+            email: userData.email,
           });
 
-          console.error('errorCode:', error.code);
-          console.error('errorMessage:', error.message);
+          if (userData.accessRequestStatus.status !== 'Approved') {
+            // console.log("access not granted")
+            showModal('dialog', undefined, {
+              title: 'Access Not Granted!',
+              message:
+                'You will be able to log into the app when your access request is approved. Kindly check your email to see if your initial access request was declined, so you can re-apply.',
+              buttonText: 'Got it, thanks!',
+            });
 
-          // ..
-        });
+            setLoading(false);
+
+            return;
+            // router.navigate('/');
+          } else {
+            router.navigate('/home');
+          }
+        }
+      }
 
       setLoading(false);
 
-      return;
-    } catch {
-      setLoading(false);
-
-      showModal('dialog', undefined, {
-        title: 'Error!',
-        message: 'An error occurred while attempting to log in.',
-        buttonText: 'Got it, thanks!',
+      setLoginForm({
+        email: '',
+        password: '',
       });
 
+      console.log('Log-in completed successfully');
+
       return;
+    } catch (error: any) {
+      // const errorCode = error.code;
+      // const errorMessage = error.message;
+
+      if (error.code === 'auth/too-many-requests') {
+        showModal('dialog', undefined, {
+          title: 'Auth Error!',
+          message:
+            'Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later.',
+          buttonText: 'Try again!',
+        });
+
+        setLoading(false);
+
+        return;
+      }
+
+      if (error.code === 'auth/invalid-credential') {
+        showModal('dialog', undefined, {
+          title: 'Auth Error!',
+          message: 'Invalid credentials provided',
+          buttonText: 'Try again!',
+        });
+
+        setLoading(false);
+
+        return;
+      }
+
+      showModal('dialog', undefined, {
+        title: 'Auth Error!',
+        message: error.message,
+        buttonText: 'Try again!',
+      });
+
+      // console.error('errorCode:', error.code);
+      // console.error('errorMessage:', error.message);
+
+      // ..
+      setLoading(false);
+
+      setLoginForm({
+        email: '',
+        password: '',
+      });
     }
   };
 
@@ -369,62 +512,323 @@ function AuthContextProvider({ children }: ChildProp) {
     }
   };
 
-  const handleApproveAccessRequest = (requestId: string, email: string) => {
+  const handleApproveAccessRequest = async (
+    userData: UserSpecs,
+    process: string
+  ) => {
     try {
-      setIsApproving(requestId);
-      console.log(
-        `Attempting to approve access request for user with email: '${email}'.`
-      );
+      if (userData && userData.userDocumentId) {
+        setIsProcessing({process: process, userDocumentId: userData.userDocumentId});
+        // console.log(
+        //   `Attempting to approve access request for user with email: '${userData.email}'.`
+        // );
+  
+        showModal('loading', `approving access for ${userData.email}...`, null);
+  
+        // Retrieve the current user's name from local storage
+        const localStorageUser = await getUserData();
+  
+        if (!localStorageUser) {
+          throw new Error('user not found in local storage');
+        }
+  
+        const currentUserName = localStorageUser.userName;
+  
+        // Reference to the Firestore document
+        const userDocRef = doc(db, 'users', userData.userDocumentId);
 
-      // Simulate login process
-      setTimeout(() => {
-        console.log('access request approval completed successfully');
-        setIsApproving(null);
-      }, 3000);
+        // console.log('userDocRef inside handleApproveAccessRequest', userDocRef);
+  
+        // Update the Firestore document
+        await updateDoc(userDocRef, {
+          accessRequestStatus: {
+           ...userData.accessRequestStatus,
+            approvedBy: currentUserName,
+            approvedAt: Date.now(),
+            status: 'Approved',
+          },
+        });
+
+        // await sendApprovalEmail(userData.email, userData.userName);
+        setIsProcessing(null);
+  
+        showModal('success', `access request approved successfully`, null);
+        fetchUsers();
+  
+  
+        setTimeout(() => {
+          // console.log(
+          //   'access request approval completed successfully: waiting for time-out'
+          // );
+  
+          hideModal();
+        }, 2000);
+       }
     } catch (error) {
       setError(
         'An error occurred while attempting to approve user access request.'
       );
-      setIsApproving(null);
-      console.error('error:', error);
+      console.error('errors:', error);
+      setIsProcessing(null);
+
+      hideModal();
     }
   };
 
-  const handleDeclineAccessRequest = (requestId: string, email: string) => {
+  const handleRevokeAccessRequest = async (
+    userData: UserSpecs,
+    process: string
+  ) => {
     try {
-      setIsDeclining(requestId);
-      console.log(
-        `Attempting to decline access request for user with email: '${email}'.`
-      );
+      if (userData && userData.userDocumentId) {
+        setIsProcessing({ process: process, userDocumentId: userData.userDocumentId });
+        // console.log(
+        //   `Attempting to revoke access request for user with email: '${userData.email}'.`
+        // );
 
-      // Simulate login process
+        showModal('loading', `revoking access for ${userData.email}...`, null);
+
+        // Retrieve the current user's name from local storage
+        const localStorageUser = await getUserData();
+
+        if (!localStorageUser) {
+          throw new Error('user not found in local storage');
+        }
+
+        const currentUserName = localStorageUser.userName;
+
+        // Reference to the Firestore document
+        const userDocRef = doc(db, 'users', userData.userDocumentId);
+
+        // console.log('userDocRef', userDocRef);
+
+        // Update the Firestore document
+        await updateDoc(userDocRef, {
+          isAdmin: false,
+          accessRequestStatus: {
+            ...userData.accessRequestStatus,
+            revokedBy: currentUserName,
+            revokedAt: Date.now(),
+            status: 'Rejected',
+          },
+        });
+
+        setIsProcessing(null);
+
+        showModal('success', `access request revoked successfully`, null);
+
+        setTimeout(() => {
+          // console.log(
+          //   'access request revoked successfully: waiting for time-out'
+          // );
+
+          fetchUsers();
+          hideModal();
+        }, 2000);
+      }
+    } catch (error) {
+      setError(
+        'An error occurred while attempting to revoke user access request.'
+      );
+      console.error('errors:', error);
+      setIsProcessing(null);
+
+      hideModal();
+    }
+  };
+
+  const handleDeclineAccessRequest = async (
+    userData: UserSpecs,
+    process: string
+  ) => {
+    try {
+      if (userData && userData.userDocumentId) {
+        setIsProcessing({process: process, userDocumentId: userData.userDocumentId});
+      // console.log(
+      //   `Attempting to decline access request for user with email: '${userData.email}'.`
+      // );
+
+      showModal('loading', `declining access for ${userData.email}...`, null);
+
+      // Retrieve the current user's name from local storage
+      const localStorageUser = await getUserData();
+
+      if (!localStorageUser) {
+        throw new Error('user not found in local storage');
+      }
+
+      const currentUserName = localStorageUser.userName;
+
+      // Reference to the Firestore document
+      const userDocRef = doc(db, 'users', userData.userDocumentId);
+      // console.log('userDocRef inside handleDeclineAccessRequest', userDocRef);
+
+      // Update the Firestore document
+        await updateDoc(userDocRef, {
+        isAdmin: false,
+        accessRequestStatus: {
+          ...userData.accessRequestStatus,  
+          declinedBy: currentUserName,
+          declinedAt: Date.now(),
+          status: 'Rejected',
+          },
+        });
+
+        setIsProcessing(null);
+
+      showModal('success', `access request declined successfully`, null);
+
       setTimeout(() => {
-        console.log('access request declining completed successfully');
-        setIsDeclining(null);
-      }, 3000);
+        // console.log(
+        //   'access request declined successfully: waiting for time-out'
+        // );
+
+        fetchUsers();
+        hideModal();
+      }, 2000);
+    }
     } catch (error) {
       setError(
         'An error occurred while attempting to decline user access request.'
       );
-      setIsDeclining(null);
-      console.error('error:', error);
+      console.error('errors:', error);
+      setIsProcessing(null);
+
+      hideModal();
+    }
+  };
+
+  const handleMakeAdmin = async (userData: UserSpecs, process: string) => {
+    try {
+      if (userData && userData.userDocumentId) {
+        setIsProcessing({ process: process, userDocumentId: userData.userDocumentId });
+        console.log(
+          `Attempting to give admin privileges to user with email: '${userData.email}'.`
+        );
+
+        showModal('loading', `making ${userData.email} an admin...`, null);
+
+        // Retrieve the current user's name from local storage
+        const localStorageUser = await getUserData();
+
+        if (!localStorageUser) {
+          throw new Error('user not found in local storage');
+        }
+
+        const currentUserName = localStorageUser.userName;
+
+        // Reference to the Firestore document
+        const userDocRef = doc(db, 'users', userData.userDocumentId);
+
+        // Update the Firestore document
+        await updateDoc(userDocRef, {
+          isAdmin: true,
+          accessRequestStatus: {
+            ...userData.accessRequestStatus,
+            madeAdminBy: currentUserName,
+            madeAdminAt: Date.now(),
+          },
+        });
+
+        setIsProcessing(null);
+
+        showModal('success', `${userData.email} is now an admin`, null);
+
+        setTimeout(() => {
+          console.log(
+            'admin privileges granted successfully: waiting for time-out'
+          );
+
+          fetchUsers();
+          hideModal();
+        }, 2000);
+      }
+    } catch (error) {
+      setError(
+        'An error occurred while attempting to grant admin privilege to user.'
+      );
+      console.error('errors:', error);
+      setIsProcessing(null);
+
+      hideModal();
+    }
+  };
+
+  const handleRemoveAdmin = async (userData: UserSpecs, process: string) => {
+    try {
+      if (userData && userData.userDocumentId) {
+        setIsProcessing({ process: process, userDocumentId: userData.userDocumentId });
+        // console.log(
+        //   `Attempting to revoke admin privileges for user with email: '${userData.email}'.`
+        // );
+
+        showModal('loading', `removing ${userData.email} from admin list...`, null);
+
+        // Retrieve the current user's name from local storage
+        const localStorageUser = await getUserData();
+
+        if (!localStorageUser) {
+          throw new Error('user not found in local storage');
+        }
+
+        const currentUserName = localStorageUser.userName;
+
+        // Reference to the Firestore document
+        const userDocRef = doc(db, 'users', userData.userDocumentId);
+
+        // Update the Firestore document
+        await updateDoc(userDocRef, {
+          isAdmin: false,
+          accessRequestStatus: {
+            ...userData.accessRequestStatus,
+            removedAdminBy: currentUserName,
+            removedAdminAt: Date.now(),
+          },
+        });
+
+        setIsProcessing(null);
+
+        showModal('success', `${userData.email} is no longer an admin`, null);
+
+        setTimeout(() => {
+          // console.log(
+          //   'admin privileges revoked successfully: waiting for time-out'
+          // );
+
+          fetchUsers();
+          hideModal();
+        }, 2000);
+      }
+    } catch (error) {
+      setError(
+        'An error occurred while attempting to revoke admin privilege from user.'
+      );
+      console.error('errors:', error);
+      setIsProcessing(null);
+
+      hideModal();
     }
   };
 
   const values: AuthContextExports = {
+    signUpForm,
+    setSignUpForm,
+    loginForm,
+    setLoginForm,
     handleLogin,
     handleSignUp,
+    handleMakeAdmin,
+    handleRemoveAdmin,
     handleResetPassword,
     handleLogout,
-    handleDeclineAccessRequest,
     handleApproveAccessRequest,
+    handleRevokeAccessRequest,
+    handleDeclineAccessRequest,
     loading,
-    isApproving,
-    isDeclining,
+    isProcessing,
     error,
     setLoading,
-    setIsDeclining,
-    setIsApproving,
+    setIsProcessing,
     setError,
   };
 

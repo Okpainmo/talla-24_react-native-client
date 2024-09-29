@@ -16,22 +16,35 @@ import {
   doc,
   query,
   where,
+  QuerySnapshot,
+  DocumentData,
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // import { db } from '../firebaseConfig'; // Make sure to import your Firestore config
 
-type UserSpecs = {
+export type UserSpecs = {
   id: string;
   userName: string;
   email: string;
   createdAt: string;
   accessRequestStatus: {
     status: 'Pending' | 'Approved' | 'Rejected';
-    approvedBy: string | null; // ISO date format as string
+    approvedBy: string | ''; // ISO date format as string
+    approvedAt: string | ''; // ISO date format as string
+    declinedBy: string | ''; // ISO date format as string
+    declinedAt: string | ''; // ISO date format as string
+    revokedBy: string | '';
+    revokedAt: string | '';
+    madeAdminBy: string | '';
+    madeAdminAt: string | '';
+    adminRevokedBy: string | '';
+    adminRevokedAt: string | '';
   };
-  userDocumentId?: string;
+  userDocumentId?: string | '';
+  isAdmin: boolean;
+  profileImage: string;
 };
 
 // Define the types for the context
@@ -43,7 +56,7 @@ interface UserContextExports {
   }) => void;
   getUserData: () => Promise<UserSpecs | null>;
   fetchUsers: () => any;
-  handleUpdateUser: (
+  handleUpdateUserProfile: (
     userId: string,
     itemToUpdate: string,
     newData: any
@@ -55,6 +68,7 @@ interface UserContextExports {
   setError: Dispatch<SetStateAction<string | null>>; // Dispatch function to set error
   users: any;
   getUserDocumentId: () => Promise<void>;
+  getUserDataFromDB: (email: string) => Promise<DocumentData | undefined>;
   storeUserDocumentId: (value: string) => Promise<void>;
   fetchUser: () => Promise<void>;
   firestoreUser: any | null;
@@ -81,7 +95,8 @@ function UserContextProvider({ children }: ChildProp) {
 
   const auth = getAuth();
   const user = auth.currentUser;
-  console.log('user', user);
+
+  // console.log('user', user);
 
   const usersCollection = collection(db, 'users');
 
@@ -100,6 +115,7 @@ function UserContextProvider({ children }: ChildProp) {
   }) => {
     try {
       const jsonValue = JSON.stringify(userData);
+      // console.log('json value - store', jsonValue);
       await AsyncStorage.setItem('user', jsonValue);
     } catch (error: any) {
       // saving error
@@ -117,6 +133,8 @@ function UserContextProvider({ children }: ChildProp) {
   const getUserData = async () => {
     try {
       const jsonValue = await AsyncStorage.getItem('user');
+
+      // console.log('json value - get', jsonValue);
       return jsonValue != null ? JSON.parse(jsonValue) : null;
     } catch (error: any) {
       // fetching error
@@ -129,6 +147,28 @@ function UserContextProvider({ children }: ChildProp) {
       throw new Error('async storage error');
     }
   };
+
+  // from DB - check for use, else delete or comment out
+  const getUserDataFromDB = async (email: string) => {
+    try {
+      // if (!user || !user.email) {
+      //   console.log('No authenticated user found');
+      //   return;
+      // }
+
+      const usersCollection = collection(db, 'users');
+
+      const q = query(usersCollection, where('email', '==', email));
+      const userData = await getDocs(q);
+
+      // console.log(userData.docs[0].data());
+
+      return userData.docs[0].data();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   // to local storage
   const storeUserDocumentId = async (value: string) => {
     try {
@@ -142,7 +182,7 @@ function UserContextProvider({ children }: ChildProp) {
     }
   };
 
-  // also from local storage - not really necessary as the value is being set inside handleCreateUser
+  // also from local storage - check for use, else delete or comment out
   const getUserDocumentId = async () => {
     try {
       const value = await AsyncStorage.getItem('userDocumentId');
@@ -150,7 +190,7 @@ function UserContextProvider({ children }: ChildProp) {
         // value previously stored
 
         setFirestoreUserDocumentId(value);
-        console.log(value);
+        // console.log(value);
         // return value;
       }
     } catch (error: any) {
@@ -162,6 +202,8 @@ function UserContextProvider({ children }: ChildProp) {
     }
   };
 
+  /* this is different from the above(getUserDataFromDB) function, as this one 
+  fetches the logged in user while that is used to fetch ANY user using their email */
   async function fetchUser() {
     try {
       const user = auth.currentUser;
@@ -182,22 +224,27 @@ function UserContextProvider({ children }: ChildProp) {
       const userDoc = querySnapshot.docs[0];
       const userData = userDoc.data();
 
-      console.log(userData);
+      // console.log('userData in fetchUser', userData);
 
       if (userData) {
         storeUserData({
-          userName: userData.fullName,
-          id: userData.uid,
+          userName: userData.userName,
+          id: userData.id,
           email: userData?.email,
         });
+
+        storeUserDocumentId(userDoc.id);
 
         setFirestoreUser(userData);
       }
     } catch (error) {
-      console.error('Error fetching user data:', error);
+      console.error('Error:', error);
+
+      throw new Error('Error fetching logged in user data from firestore:');
     }
   }
 
+  // fetches all firestore users
   const fetchUsers = async () => {
     try {
       setIsUpdating('fetchUsers');
@@ -229,13 +276,15 @@ function UserContextProvider({ children }: ChildProp) {
   const handleCreateUser = async (userData: UserSpecs) => {
     try {
       const docRef = await addDoc(usersCollection, userData);
-      const newUser: UserSpecs = { userDocumentId: docRef.id, ...userData };
 
-      console.log('addDoc passed successfully');
+      storeUserDocumentId(docRef.id);
 
-      if (newUser && newUser.userDocumentId) {
-        storeUserDocumentId(newUser.userDocumentId);
+      if (docRef) {
         // setUserDocumentId(newUser.userDocumentId);
+
+        const userDoc = doc(db, 'users', docRef.id);
+
+        await updateDoc(userDoc, { userDocumentId: docRef.id });
       }
     } catch (error) {
       showModal('dialog', undefined, {
@@ -248,18 +297,19 @@ function UserContextProvider({ children }: ChildProp) {
     }
   };
 
-  const handleUpdateUser = async (
-    userId: string,
+  // not to be used as a utility function - this is specially for the account page
+  const handleUpdateUserProfile = async (
+    userDocumentId: string,
     itemToUpdate: string,
     newData: { userName: string; email: string }
   ) => {
     try {
       setIsUpdating(itemToUpdate); // Set loading to true when the update starts
-      showModal('caution', `updating ${itemToUpdate}...`, null);
+      showModal('loading', `updating ${itemToUpdate}...`, null);
 
-      console.log(newData);
+      // console.log(newData);
 
-      const userDoc = doc(db, 'users', userId);
+      const userDoc = doc(db, 'users', userDocumentId);
 
       if (itemToUpdate === 'userName') {
         await updateDoc(userDoc, { userName: newData.userName });
@@ -279,7 +329,7 @@ function UserContextProvider({ children }: ChildProp) {
         hideModal();
       }, 2000);
 
-      console.log(`${itemToUpdate} updated successfully`, userId);
+      // console.log(`${itemToUpdate} updated successfully`, userId);
 
       setTimeout(() => {
         setIsUpdating(null); // Set loading to false when the update is complete
@@ -303,13 +353,14 @@ function UserContextProvider({ children }: ChildProp) {
     getUserData,
     fetchUsers,
     handleCreateUser, // The function to handle user creation in Firestore
-    handleUpdateUser, // The function to handle user update
+    handleUpdateUserProfile, // The function to handle user update
     isUpdating, // Loading state
     error, // Error state
     setIsUpdating, // Setter for loading state
     setError, // Setter for error state
     users,
     getUserDocumentId,
+    getUserDataFromDB,
     storeUserDocumentId,
     fetchUser,
     firestoreUser,

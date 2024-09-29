@@ -5,7 +5,7 @@ type ModalComponents =
   | 'preloader'
   | 'success'
   | 'error'
-  | 'caution'
+  | 'loading'
   | 'dialog'
   | null;
 
@@ -22,16 +22,9 @@ type ContextExports = {
     } | null
   ) => void;
   hideModal: () => void;
-  // showPreloader: () => void;
-  // showSuccess: () => void;
-  // showError: () => void;
-  // showCaution: () => void;
-  // showDialog: () => void;
-  // hidePreloader: () => void;
-  // hideSuccess: () => void;
-  // hideError: () => void;
-  // hideCaution: () => void;
-  // hideDialog: () => void;
+  popLogOutModal: () => void;
+  hideLogOutModal: () => void;
+  showLogOutModal: boolean;
   dialogData: { title: string; message: string; buttonText: string };
   popUpMessage: string;
 };
@@ -43,6 +36,7 @@ export const GlobalsContext = createContext<ContextExports | undefined>(
 
 function GlobalsContextProvider({ children }: ChildProp) {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [showLogOutModal, setShowLogOutModal] = useState(false);
   const [dialogData, setDialogData] = useState<{
     title: string;
     message: string;
@@ -80,28 +74,13 @@ function GlobalsContextProvider({ children }: ChildProp) {
     setCurrentModalComponent(null);
   };
 
-  // Specific functions for each modal component
-  // const showPreloader = () => showModal('preloader');
-  // const showSuccess = () => showModal('success');
-  // const showError = () => showModal('error');
-  // const showCaution = () => showModal('caution');
-  // const showDialog = () => showModal('dialog');
+  const popLogOutModal = () => {
+    setShowLogOutModal(true);
+  };
 
-  // const hidePreloader = () => {
-  //   if (currentModalComponent === 'preloader') hideModal();
-  // };
-  // const hideSuccess = () => {
-  //   if (currentModalComponent === 'success') hideModal();
-  // };
-  // const hideError = () => {
-  //   if (currentModalComponent === 'error') hideModal();
-  // };
-  // const hideCaution = () => {
-  //   if (currentModalComponent === 'caution') hideModal();
-  // };
-  // const hideDialog = () => {
-  //   if (currentModalComponent === 'dialog') hideModal();
-  // };
+  const hideLogOutModal = () => {
+    setShowLogOutModal(false);
+  };
 
   return (
     <GlobalsContext.Provider
@@ -110,16 +89,9 @@ function GlobalsContextProvider({ children }: ChildProp) {
         currentModalComponent,
         showModal,
         hideModal,
-        // showPreloader,
-        // showSuccess,
-        // showError,
-        // showCaution,
-        // showDialog,
-        // hidePreloader,
-        // hideSuccess,
-        // hideError,
-        // hideCaution,
-        // hideDialog,
+        showLogOutModal,
+        popLogOutModal,
+        hideLogOutModal,
         dialogData,
         popUpMessage,
       }}

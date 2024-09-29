@@ -45,10 +45,7 @@ const {
 
 const LogIn = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [loginForm, setLoginForm] = useState({
-    email: '',
-    password: '',
-  });
+ 
 
   const globalsContext = useContext(GlobalsContext);
   const authContext = useContext(AuthContext);
@@ -60,7 +57,7 @@ const LogIn = () => {
   }
 
   // Now it's safe to access `testing` after the type check
-  const { handleLogin, loading } = authContext;
+  const { handleLogin, loading, loginForm, setLoginForm } = authContext;
   const { showModal, hideModal } = globalsContext;
   const { getUserData } = userContext;
 

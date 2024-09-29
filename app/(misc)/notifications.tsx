@@ -56,12 +56,9 @@ const {
 } = default_light_texts || {};
 import { auth } from '../../firebaseConfig';
 import { getAuth } from 'firebase/auth';
+import type { UserSpecs } from '@/context/User.context';
 
 const Notifications = () => {
-  getAuth().onAuthStateChanged((user) => {
-    if (!user) router.replace('/');
-  });
-
   const [showPassword, setShowPassword] = useState(false);
 
   const globalsContext = useContext(GlobalsContext);
@@ -73,97 +70,94 @@ const Notifications = () => {
     throw new Error('error: context error');
   }
 
+  // Now it's safe to access `testing` after the type check
+  const {
+    handleApproveAccessRequest,
+    handleRevokeAccessRequest,
+    handleDeclineAccessRequest,
+    handleMakeAdmin,
+    handleRemoveAdmin,
+    loading,
+    isProcessing,
+  } = authContext;
 
-type UserSpecs = {
-  id: string;
-  userName: string;
-  email: string;
-  createdAt: string;
-  accessRequestStatus: {
-    status: 'Pending' | 'Approved' | 'Rejected';
-    approvedBy: string | null; // ISO date format as string
-  };
-};
+  // Now it's safe to access `testing` after the type check
+  const { showModal, hideModal } = globalsContext;
+  const { fetchUsers, users, getUserDataFromDB, firestoreUser } = userContext;
 
-// Now it's safe to access `testing` after the type check
-const {
-  handleApproveAccessRequest,
-  handleDeclineAccessRequest,
-  loading,
-  isDeclining,
-  isApproving,
-} = authContext;
+  getAuth().onAuthStateChanged((user) => {
+    if (!user) router.replace('/');
+  });
 
-// Now it's safe to access `testing` after the type check
-const { showModal, hideModal } = globalsContext;
-const { fetchUsers, users } = userContext;
+  // console.log("firestoreUser", firestoreUser)
 
-useEffect(() => {
-  showModal('preloader');
+  useEffect(() => {
+    showModal('preloader');
 
-  fetchUsers();
-}, []);
+    fetchUsers();
+  }, []);
 
-return (
-  <View
-    style={{
-      backgroundColor: background_variant_1,
-      paddingTop: Platform.OS === 'android' ? 50 : 0,
-    }}
-    className='w-full flex-1'
-  >
+  return (
     <View
-      className='header flex flex-row items-center px-3 pb-[7px]'
-      style={{ backgroundColor: background_variant_1 }}
+      style={{
+        backgroundColor: background_variant_1,
+        paddingTop: Platform.OS === 'android' ? 50 : 0,
+      }}
+      className='w-full flex-1'
     >
-      <Pressable
-        onPress={() => router.back()}
-        style={{ borderColor: text_variant_3 }}
-        className={`mr-6 w-[40px] h-[40px] rounded-full border flex items-center justify-center`}
+      <View
+        className='header flex flex-row items-center px-3 pb-[7px]'
+        style={{ backgroundColor: background_variant_1 }}
       >
-        <Ionicons
-          name='chevron-back-outline'
-          size={22}
-          color={text_variant_3}
-        />
-      </Pressable>
-      <Text
-        className='text-[25px] mt-1'
-        style={{ color: text_variant_1, fontFamily: 'font_800' }}
-      >
-        Notifications.
-      </Text>
-    </View>
-    <ScrollView
-      className='px-3'
-      style={{ backgroundColor: background_variant_1 }}
-    >
-      <View className='pb-[60px] mt-[50px] hidden'>
-        <Text
-          className='text-[14px] leading-[25px] text-center'
-          style={{ fontFamily: 'font_400' }}
+        <Pressable
+          onPress={() => router.back()}
+          style={{ borderColor: text_variant_3 }}
+          className={`mr-6 w-[40px] h-[40px] rounded-full border flex items-center justify-center`}
         >
-          There are no notifications to view...
+          <Ionicons
+            name='chevron-back-outline'
+            size={22}
+            color={text_variant_3}
+          />
+        </Pressable>
+        <Text
+          className='text-[25px] mt-1'
+          style={{ color: text_variant_1, fontFamily: 'font_800' }}
+        >
+          Notifications.
         </Text>
       </View>
-      <View className='notifications-rack flex mt-3 pb-[100px]'>
-        {users &&
-          users.map((user: UserSpecs) => {
-            return (
-              <View
-                key={user.id}
-                className='access-request-card w-full flex-1 border rounded-[10px] 
+      <ScrollView
+        className='px-3'
+        style={{ backgroundColor: background_variant_1 }}
+      >
+        <View className='pb-[60px] mt-[50px] hidden'>
+          <Text
+            className='text-[14px] leading-[25px] text-center'
+            style={{ fontFamily: 'font_400' }}
+          >
+            There are no notifications to view...
+          </Text>
+        </View>
+        <View className='notifications-rack flex mt-3 pb-[100px]'>
+          {users &&
+            users.map((user: UserSpecs) => {
+              // console.log('firestoreUser:', firestoreUser);
+              return (
+                <View
+                  key={user.id}
+                  className='access-request-card w-full flex-1 border rounded-[10px] 
             p-3 mb-4'
-                style={{ borderColor: text_variant_3 }}
-              >
-                <Text
-                  className='mb-2'
-                  style={{ color: text_variant_1, fontFamily: 'font_400' }}
+                  style={{ borderColor: text_variant_3 }}
                 >
-                  Access request
-                </Text>
-                <View className='flex flex-row items-center'>
-                  {/* <Image
+                  <Text
+                    className='mb-2'
+                    style={{ color: text_variant_1, fontFamily: 'font_400' }}
+                  >
+                    Access request
+                  </Text>
+                  <View className='flex flex-row items-center'>
+                    {/* <Image
               style={{
                 width: 50,
                 objectFit: 'contain',
@@ -174,115 +168,231 @@ return (
               // resizeMethod='scale'
               accessibilityLabel='user avatar'
             /> */}
-                  <View
-                    className='mr-4 w-[50px] h-[50px] rounded-full flex items-center justify-center'
-                    style={{ backgroundColor: background_variant_3 }}
-                  >
-                    <Ionicons
-                      name='person-outline'
-                      size={22}
-                      color={text_variant_1}
-                    />
-                  </View>
-                  <View className='flex justify-between'>
-                    <Text
-                      className='text-[14px]'
-                      style={{
-                        color: text_variant_1,
-                        fontFamily: 'font_600',
-                      }}
+                    <View
+                      className='mr-4 w-[50px] h-[50px] rounded-full flex items-center justify-center'
+                      style={{ backgroundColor: background_variant_3 }}
                     >
-                      {user.userName}
-                    </Text>
-                    <View className='flex flex-row'>
+                      <Ionicons
+                        name='person-outline'
+                        size={22}
+                        color={text_variant_1}
+                      />
+                    </View>
+                    <View className='flex justify-between'>
                       <Text
-                        className='text-[11px] mt-[3px]'
+                        className='text-[14px]'
                         style={{
                           color: text_variant_1,
-                          fontFamily: 'font_400',
+                          fontFamily: 'font_600',
                         }}
                       >
-                        {user.email}
+                        {user.userName}
                       </Text>
-                      <Text
-                        className='text-[11px] mt-[3px]'
-                        style={{
-                          color: text_variant_1,
-                          fontFamily: 'font_400',
-                        }}
-                      >
-                        {" "} | {" "}
-                      </Text>
-                      <Text
-                        className={`text-[11px] mt-[3px] 
-                          ${user.accessRequestStatus.status === 'Rejected' ? 'text-red-700'
-                            : user.accessRequestStatus.status === 'Approved' ? 'text-green-700' : 'text-red-700'}`}
-                        style={{
-                          color: text_variant_1,
-                          fontFamily: 'font_400',
-                        }}
-                      >
-                        {user.accessRequestStatus.status}
-                      </Text>
+                      <View className='flex flex-row'>
+                        <Text
+                          className='text-[11px] mt-[3px]'
+                          style={{
+                            color: text_variant_1,
+                            fontFamily: 'font_400',
+                          }}
+                        >
+                          {user.email}
+                        </Text>
+                        <Text
+                          className='text-[11px] mt-[3px]'
+                          style={{
+                            color: text_variant_1,
+                            fontFamily: 'font_400',
+                          }}
+                        >
+                          {' '}
+                          |{' '}
+                        </Text>
+                        <Text
+                          className={`text-[11px] mt-[3px] underline
+                          ${
+                            user.accessRequestStatus.status === 'Rejected'
+                              ? 'text-red-600'
+                              : user.accessRequestStatus.status === 'Approved'
+                              ? 'text-green-600'
+                              : 'text-[#6b7280]'
+                          }`}
+                          style={{
+                            // color: text_variant_1,
+                            fontFamily: 'font_400',
+                          }}
+                        >
+                          {user.accessRequestStatus.status}
+                        </Text>
+                      </View>
                     </View>
                   </View>
-                </View>
-                <View className='flex-1 w-full flex-row mt-4'>
-                  <TouchableOpacity
-                    className='rounded-[10px] min-w-[80px] px-4 flex items-center 
-                justify-center py-[0] min-h-[40px] mr-2'
-                    style={{
-                      // fontFamily: 'font_200',
-                      backgroundColor: background_variant_2,
-                    }}
-                    onPress={() =>
-                      handleApproveAccessRequest(`${user.id}`, `${user.email}`)
-                    }
+                  <View
+                    className={`${
+                      firestoreUser.isAdmin !== true ? 'hidden' : 'flex flex-1'
+                    } w-full flex-row mt-4`}
                   >
-                    {isApproving === user.id ? (
-                      <ActivityIndicator size='small' color='#dbeafe' />
-                    ) : (
-                      <Text
-                        className='text-[12px]'
-                        style={{
-                          color: text_variant_5,
-                          fontFamily: 'font_500',
-                        }}
-                      >
-                        Approve
-                      </Text>
-                    )}
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    className='rounded-[10px] min-w-[80px] px-4 flex items-center justify-center py-[0] 
-                min-h-[40px] mr-2'
-                    style={{
-                      // fontFamily: 'font_200',
-                      backgroundColor: background_variant_5,
-                    }}
-                    onPress={() =>
-                      handleDeclineAccessRequest(`${user.id}`, `${user.email}`)
-                    }
-                  >
-                    {isDeclining === user.id ? (
-                      <ActivityIndicator size='small' color={text_variant_2} />
-                    ) : (
-                      <Text
-                        className='text-[12px] text-blue-700'
-                        style={{ fontFamily: 'font_500' }}
-                      >
-                        Decline
-                      </Text>
-                    )}
-                  </TouchableOpacity>
+                    <TouchableOpacity
+                      className={`${
+                        user.accessRequestStatus.status === 'Approved'
+                          ? 'hidden'
+                          : 'flex'
+                      } rounded-[10px] min-w-[80px] px-4 items-center 
+                justify-center py-[0] min-h-[40px] mr-2`}
+                      style={{
+                        // fontFamily: 'font_200',
+                        backgroundColor: background_variant_2,
+                      }}
+                      onPress={() =>
+                        handleApproveAccessRequest(user, 'approving access')
+                      }
+                    >
+                      {isProcessing?.userDocumentId === user.userDocumentId &&
+                      isProcessing?.process == 'approving access' ? (
+                        <ActivityIndicator size='small' color='#dbeafe' />
+                      ) : (
+                        <Text
+                          className='text-[12px]'
+                          style={{
+                            color: text_variant_5,
+                            fontFamily: 'font_500',
+                          }}
+                        >
+                          Approve Access
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      className={`${
+                        user.accessRequestStatus.status === 'Approved'
+                          ? 'flex'
+                          : 'hidden'
+                      } rounded-[10px] min-w-[80px] px-4 items-center 
+                justify-center py-[0] min-h-[40px] mr-2`}
+                      style={{
+                        // fontFamily: 'font_200',
+                        backgroundColor: background_variant_2,
+                      }}
+                      onPress={() =>
+                        handleRevokeAccessRequest(user, 'revoking access')
+                      }
+                    >
+                      {isProcessing?.userDocumentId === user.userDocumentId &&
+                      isProcessing?.process == 'revoking access' ? (
+                        <ActivityIndicator size='small' color='#dbeafe' />
+                      ) : (
+                        <Text
+                          className='text-[12px]'
+                          style={{
+                            color: text_variant_5,
+                            fontFamily: 'font_500',
+                          }}
+                        >
+                          Revoke Access
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      className={`${
+                        user.accessRequestStatus.status === 'Approved' ||
+                        user.accessRequestStatus.status === 'Rejected'
+                          ? 'hidden'
+                          : 'flex'
+                      } rounded-[10px] min-w-[80px] px-4 items-center justify-center py-[0] 
+                min-h-[40px] mr-2`}
+                      style={{
+                        // fontFamily: 'font_200',
+                        backgroundColor: background_variant_5,
+                      }}
+                      onPress={() =>
+                        handleDeclineAccessRequest(user, 'declining access')
+                      }
+                    >
+                      {isProcessing?.userDocumentId === user.userDocumentId &&
+                      isProcessing?.process == 'declining access' ? (
+                        <ActivityIndicator
+                          size='small'
+                          color={text_variant_2}
+                        />
+                      ) : (
+                        <Text
+                          className='text-[12px] text-blue-700'
+                          style={{ fontFamily: 'font_500' }}
+                        >
+                          Decline Access
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      className={`${
+                        user.isAdmin === false && user.accessRequestStatus.status === 'Approved' ? 'flex' : 'hidden'
+                      } rounded-[10px] min-w-[80px] px-4 items-center justify-center py-[0] 
+                min-h-[40px] mr-2`}
+                      style={{
+                        // fontFamily: 'font_200',
+                        backgroundColor: background_variant_5,
+                      }}
+                      onPress={() =>
+                        handleMakeAdmin(
+                          user,
+                          'approving admin privilege'
+                        )
+                      }
+                    >
+                      {isProcessing?.userDocumentId === user.userDocumentId &&
+                      isProcessing?.process === 'approving admin privilege' ? (
+                        <ActivityIndicator
+                          size='small'
+                          color={text_variant_2}
+                        />
+                      ) : (
+                        <Text
+                          className='text-[12px] text-blue-700'
+                          style={{ fontFamily: 'font_500' }}
+                        >
+                          Make Admin
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      className={`${
+                        user.isAdmin === true && user.accessRequestStatus.status === 'Approved' ? 'flex' : 'hidden'
+                      } rounded-[10px] min-w-[80px] px-4 items-center justify-center py-[0] 
+                min-h-[40px] mr-2`}
+                      style={{
+                        // fontFamily: 'font_200',
+                        backgroundColor: background_variant_5,
+                      }}
+                      onPress={() =>
+                        handleRemoveAdmin(
+                          user,
+                          'revoking admin privilege'
+                        )
+                      }
+                    >
+                      {isProcessing?.userDocumentId === user.userDocumentId &&
+                      isProcessing?.process === 'revoking admin privilege' ? (
+                        <ActivityIndicator
+                          size='small'
+                          color={text_variant_2}
+                        />
+                      ) : (
+                        <Text
+                          className='text-[12px] text-blue-700'
+                          style={{ fontFamily: 'font_500' }}
+                        >
+                          Remove Admin
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
-            );
-          })}
-      </View>
-    </ScrollView>
-  </View>
-);
+              );
+            })}
+        </View>
+      </ScrollView>
+    </View>
+  );
 };
 
 export default Notifications;

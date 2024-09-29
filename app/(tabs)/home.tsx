@@ -21,10 +21,12 @@ import EmptyActivityLogSVG from '../../assets/images/img-1.svg';
 import { GlobalsContext } from '@/context/Globals.context';
 import { AuthContext } from '@/context/Auth.context';
 import { UserContext } from '@/context/User.context';
+import { HardwareContext } from '@/context/Hardware.context';
 
 import GlobalModal from '@/components/Layout/GlobalModal';
 import { auth } from '../../firebaseConfig';
 import { getAuth } from 'firebase/auth';
+import AccessVerifier from '@/components/AccessVerifier';
 
 const {
   background_variant_1,
@@ -43,18 +45,14 @@ const {
 } = default_light_texts || {};
 import AboutModal from '@/components/AboutModal';
 import Emoji from '@/components/Emoji';
-
+import LogOutModal from '@/components/LogOutModal';
 const Home = () => {
   getAuth().onAuthStateChanged((user) => {
     if (!user) router.replace('/');
   });
 
-  const auth = getAuth();
-  const user = auth.currentUser;
-
-  useEffect(() => {
-    console.log('current user', user);
-  }, []);
+  // const auth = getAuth();
+  // const user = auth.currentUser;
 
   const [showAboutModal, setShowAboutModal] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState<{
@@ -65,16 +63,18 @@ const Home = () => {
   const globalsContext = useContext(GlobalsContext);
   const authContext = useContext(AuthContext);
   const userContext = useContext(UserContext);
+  const hardwareContext = useContext(HardwareContext);
 
   // Ensure context is not undefined
-  if (!globalsContext || !authContext || !userContext) {
+  if (!globalsContext || !authContext || !userContext || !hardwareContext) {
     throw new Error('error: context error');
   }
 
   // Now it's safe to access `testing` after the type check
-  const { showModal, hideModal } = globalsContext;
+  const { popLogOutModal } = globalsContext;
   const { loading, handleLogout } = authContext;
   const { fetchUser, getUserData, firestoreUser } = userContext;
+  const { isOnline } = hardwareContext;
 
   // async function getUser() {
   //   const user = await getUserData();
@@ -91,250 +91,276 @@ const Home = () => {
   }, []);
 
   return (
-    <View
-      style={{
-        backgroundColor: background_variant_1,
-        paddingTop: Platform.OS === 'android' ? 50 : 0,
-      }}
-      className='w-full flex-1 relative'
-    >
-      <AboutModal
-        showAboutModal={showAboutModal}
-        setShowAboutModal={setShowAboutModal}
-      />
+    <AccessVerifier>
       <View
-        className={`${
-          Platform.OS === 'ios' && 'hidden'
-        } h-[10px] w-full relative z-40`}
-        style={{ backgroundColor: background_variant_1 }}
-      >
-        {/* { shadow decoy for android only} */}
-      </View>
-      <View
-        className='header flex flex-row items-center px-3 justify-between top-[-5px] relative'
         style={{
           backgroundColor: background_variant_1,
-          shadowColor: text_variant_1,
-          shadowOpacity: 0.1,
-          shadowRadius: 10,
-          shadowOffset: {
-            width: 0,
-            height: 0,
-          },
-          elevation: Platform.OS === 'android' ? 2 : 0,
+          paddingTop: Platform.OS === 'android' ? 50 : 0,
         }}
+        className='w-full flex-1 relative'
       >
-        <View>
-          <Text
-            className='text-[28px]'
-            style={{ fontFamily: 'font_600', color: text_variant_1 }}
-          >
-            Home
-          </Text>
+        <AboutModal
+          showAboutModal={showAboutModal}
+          setShowAboutModal={setShowAboutModal}
+        />
+        <LogOutModal />
+        <View
+          className={`${
+            Platform.OS === 'ios' && 'hidden'
+          } h-[10px] w-full relative z-40`}
+          style={{ backgroundColor: background_variant_1 }}
+        >
+          {/* { shadow decoy for android only} */}
         </View>
-
-        <View className='flex-row justify-end gap-x-5 items-center'>
-          <Pressable
-            onPress={() => router.push('/notifications')}
-            // style={{ borderColor: text_variant_1 }}
-            // className={`mb-10 w-[40px] h-[40px] rounded-full border flex items-center justify-center`}
-          >
-            <Ionicons
-              name='notifications-outline'
-              size={26}
-              color={text_variant_1}
-            />
-          </Pressable>
-          <Pressable
-            onPress={() => setShowAboutModal(true)}
-            // style={{ borderColor: text_variant_1 }}
-            // className={`mb-10 w-[40px] h-[40px] rounded-full border flex items-center justify-center`}
-          >
-            <Ionicons
-              name='help-circle-outline'
-              size={28}
-              color={text_variant_1}
-            />
-          </Pressable>
-        </View>
-      </View>
-      <ScrollView className='relative top-[-5px]'>
-        <View className='px-3 pt-[20px]'>
-          <View
-            className='rounded-[15px] py-5'
-            style={{ backgroundColor: background_variant_2 }}
-          >
-            <View className='px-5 flex-row'>
-              <Text
-                className='text-base mr-[4px]'
-                style={{ fontFamily: 'font_500', color: text_variant_5 }}
-              >
-                Hello {firestoreUser?.userName.split(" ")[0]}
-              </Text>
-              <Emoji label='waving emoji to welcome user' symbol='👋' />
-            </View>
-            <View className='px-5 mt-6'>
-              <Text
-                className='text-[22px]'
-                style={{ fontFamily: 'font_600', color: text_variant_5 }}
-              >
-                Talla 24
-              </Text>
-            </View>
-            <View className='hardware-status-wrapper px-5 flex flex-row'>
-              <Text style={{ color: text_variant_5, fontFamily: 'font_400' }}>
-                Hardware Status:
-              </Text>
-
-              <Text
-                className='ml-2 underline'
-                style={{ fontFamily: 'font_500', color: text_variant_5 }}
-              >
-                offline
-              </Text>
-            </View>
+        <View
+          className='header flex flex-row items-center px-3 justify-between top-[-5px] relative'
+          style={{
+            backgroundColor: background_variant_1,
+            shadowColor: text_variant_1,
+            shadowOpacity: 0.1,
+            shadowRadius: 10,
+            shadowOffset: {
+              width: 0,
+              height: 0,
+            },
+            elevation: Platform.OS === 'android' ? 2 : 0,
+          }}
+        >
+          <View>
+            <Text
+              className='text-[28px]'
+              style={{ fontFamily: 'font_600', color: text_variant_1 }}
+            >
+              Home
+            </Text>
           </View>
-          <View className='mt-5 flex-1 flex-row'>
-            <View
-              className='border rounded-[15px] p-4 flex-1 mr-2'
-              style={{ borderColor: text_variant_3 }}
+
+          <View className='flex-row justify-end gap-x-5 items-center'>
+            <Pressable
+              onPress={() => router.push('/notifications')}
+              // style={{ borderColor: text_variant_1 }}
+              // className={`mb-10 w-[40px] h-[40px] rounded-full border flex items-center justify-center`}
             >
-              <View
-                className='flex flex-1 mr-2 justify-between flex-row 
-          items-center'
-              >
+              <Ionicons
+                name='notifications-outline'
+                size={26}
+                color={text_variant_1}
+              />
+            </Pressable>
+            <Pressable
+              onPress={() => setShowAboutModal(true)}
+              // style={{ borderColor: text_variant_1 }}
+              // className={`mb-10 w-[40px] h-[40px] rounded-full border flex items-center justify-center`}
+            >
+              <Ionicons
+                name='help-circle-outline'
+                size={28}
+                color={text_variant_1}
+              />
+            </Pressable>
+          </View>
+        </View>
+        <ScrollView className='relative top-[-5px]'>
+          <View className='px-3 pt-[20px]'>
+            <View
+              className='rounded-[15px] py-5'
+              style={{ backgroundColor: background_variant_2 }}
+            >
+              <View className='px-5 flex-row'>
                 <Text
-                  className='text-[12px]'
-                  style={{ fontFamily: 'font_400' }}
+                  className='text-base mr-[4px]'
+                  style={{ fontFamily: 'font_500', color: text_variant_5 }}
                 >
-                  Devices
+                  Hello {firestoreUser?.userName.split(' ')[0]}
                 </Text>
-                <Ionicons
-                  name='phone-portrait-outline'
-                  size={26}
-                  color={text_variant_1}
-                />
+                <Emoji label='waving emoji to welcome user' symbol='👋' />
               </View>
-              <View className='mt-4 py-4 flex-1 justify-center items-center'>
+              <View className='px-5 mt-6'>
                 <Text
-                  className='text-4xl'
-                  style={{ color: text_variant_2, fontFamily: 'font_300' }}
+                  className='text-[22px]'
+                  style={{ fontFamily: 'font_600', color: text_variant_5 }}
                 >
-                  1
+                  Talla 24
                 </Text>
+              </View>
+              <View className='hardware-status-wrapper px-5 flex flex-row'>
+                <Text style={{ color: text_variant_5, fontFamily: 'font_400' }}>
+                  Hardware Status:
+                </Text>
+
                 <Text
-                  className='text-[12px] mt-2'
-                  style={{ color: text_variant_2, fontFamily: 'font_400' }}
+                  className='ml-2 underline'
+                  style={{ fontFamily: 'font_500', color: text_variant_5 }}
                 >
-                  Connected
+                  offline
                 </Text>
               </View>
             </View>
-            <View
-              className='border rounded-[15px] p-4 flex-1 ml-2'
-              style={{ borderColor: text_variant_3 }}
-            >
+            <View className='mt-5 flex-1 flex-row'>
               <View
-                className='flex flex-1 mr-2 justify-between flex-row 
-          items-center'
+                className='border rounded-[15px] p-4 flex-1 mr-2'
+                style={{ borderColor: text_variant_3 }}
               >
-                <Text
-                  className='text-[12px]'
-                  style={{ fontFamily: 'font_400' }}
-                >
-                  Accounts
-                </Text>
-                <Ionicons
-                  name='people-outline'
-                  size={28}
-                  color={text_variant_1}
-                />
-              </View>
-              <View className='flex flex-row'>
                 <View
-                  className='mt-4 flex-1 justify-center items-center border-r pr-4 py-4'
-                  style={{ borderColor: text_variant_3 }}
+                  className='flex flex-1 mr-2 justify-between flex-row 
+          items-center'
                 >
                   <Text
-                    className='text-4xl'
-                    style={{ color: text_variant_2, fontFamily: 'font_300' }}
+                    className='text-[12px]'
+                    style={{ fontFamily: 'font_400' }}
                   >
-                    1
+                    Hardware
                   </Text>
+                  <Ionicons
+                    name='hardware-chip-outline'
+                    size={24}
+                    color={text_variant_1}
+                  />
+                </View>
+                <View
+                  className={`mt-2 py-4 flex-1 justify-center items-center`}
+                >
+                  {isOnline ? (
+                    <Ionicons
+                      // className='text-green-400'
+                      name='checkmark-circle-outline'
+                      size={40}
+                      color='#22c55e'
+                    />
+                  ) : (
+                    <Ionicons
+                      // className='text-red-500'
+                      name='cloud-offline-outline'
+                      size={35}
+                      color={text_variant_1}
+                    />
+                  )}
                   <Text
-                    className='text-[12px] mt-2'
+                    className={`text-[12px] mt-2 ${
+                      isOnline ? 'flex' : 'hidden'
+                    }`}
                     style={{ color: text_variant_2, fontFamily: 'font_400' }}
                   >
-                    Online
-                  </Text>
-                </View>
-                <View className='mt-4 flex-1 justify-center items-center ml-4'>
-                  <Text
-                    className='text-4xl'
-                    style={{ color: text_variant_1, fontFamily: 'font_300' }}
-                  >
-                    25
+                    Connected
                   </Text>
                   <Text
-                    className='text-[12px] mt-2'
-                    style={{ color: text_variant_1, fontFamily: 'font_400' }}
+                    className={`text-[12px] mt-2 ${
+                      isOnline ? 'hidden' : 'flex'
+                    }`}
+                    style={{ color: text_variant_2, fontFamily: 'font_400' }}
                   >
                     Offline
                   </Text>
                 </View>
               </View>
+              <View
+                className='border rounded-[15px] p-4 flex-1 ml-2'
+                style={{ borderColor: text_variant_3 }}
+              >
+                <View
+                  className='flex flex-1 mr-2 justify-between flex-row 
+          items-center'
+                >
+                  <Text
+                    className='text-[12px]'
+                    style={{ fontFamily: 'font_400' }}
+                  >
+                    Accounts
+                  </Text>
+                  <Ionicons
+                    name='people-outline'
+                    size={28}
+                    color={text_variant_1}
+                  />
+                </View>
+                <View className='flex flex-row'>
+                  <View
+                    className='mt-4 flex-1 justify-center items-center border-r pr-4 py-4'
+                    style={{ borderColor: text_variant_3 }}
+                  >
+                    <Text
+                      className='text-4xl'
+                      style={{ color: text_variant_2, fontFamily: 'font_300' }}
+                    >
+                      -
+                    </Text>
+                    <Text
+                      className='text-[12px] mt-2'
+                      style={{ color: text_variant_2, fontFamily: 'font_400' }}
+                    >
+                      Online
+                    </Text>
+                  </View>
+                  <View className='mt-4 flex-1 justify-center items-center ml-4'>
+                    <Text
+                      className='text-4xl'
+                      style={{ color: text_variant_1, fontFamily: 'font_300' }}
+                    >
+                      --
+                    </Text>
+                    <Text
+                      className='text-[12px] mt-2'
+                      style={{ color: text_variant_1, fontFamily: 'font_400' }}
+                    >
+                      Offline
+                    </Text>
+                  </View>
+                </View>
+              </View>
             </View>
           </View>
-        </View>
-        <View className='activity-log-section px-3'>
-          <Text
-            className='text-[20px] mt-4 mb-2'
-            style={{ fontFamily: 'font_500', color: text_variant_1 }}
-          >
-            Activity Log
-          </Text>
-          <View
-            className='border rounded-[15px] p-4 flex-1 flex-row mb-[150px]'
-            style={{ borderColor: text_variant_3 }}
-          >
-            <View className='w-[60%]'>
-              <Text className='text-[12px]' style={{ fontFamily: 'font_400' }}>
-                Users and hardware activity information will appear here, when
-                the activity-logs feature is set up.
-              </Text>
-              <View className='flex-1 w-full flex-row mt-8'>
-                <Link
-                  href={'/stream'}
-                  className='rounded-[10px] px-4 flex items-center justify-center py-3 mr-2'
-                  style={{
-                    // fontFamily: 'font_200',
-                    backgroundColor: background_variant_2,
-                  }}
-                  asChild
+          <View className='activity-log-section px-3'>
+            <Text
+              className='text-[20px] mt-4 mb-2'
+              style={{ fontFamily: 'font_500', color: text_variant_1 }}
+            >
+              Activity Log
+            </Text>
+            <View
+              className='border rounded-[15px] p-4 flex-1 flex-row mb-[150px]'
+              style={{ borderColor: text_variant_3 }}
+            >
+              <View className='w-[60%]'>
+                <Text
+                  className='text-[12px]'
+                  style={{ fontFamily: 'font_400' }}
                 >
-                  <TouchableOpacity
-                    className='rounded-[10px] min-w-[80px] px-4 flex items-center 
-                justify-center py-[0] min-h-[40px] mr-2'
+                  Users and hardware activity information will appear here, when
+                  the activity-logs feature is set up.
+                </Text>
+                <View className='flex-1 w-full flex-row mt-8'>
+                  <Link
+                    href={'/stream'}
+                    className='rounded-[10px] px-4 flex items-center justify-center py-3 mr-2'
                     style={{
                       // fontFamily: 'font_200',
                       backgroundColor: background_variant_2,
                     }}
-                    // onPress={() =>
-                    //   handleApproveAccessRequest(`${each.id}`, `${each.email}`)
-                    // }
+                    asChild
                   >
-                    <Text
-                      className='text-[12px]'
+                    <TouchableOpacity
+                      className='rounded-[10px] min-w-[80px] px-4 flex items-center 
+                justify-center py-[0] min-h-[40px] mr-2'
                       style={{
-                        color: text_variant_5,
-                        fontFamily: 'font_500',
+                        // fontFamily: 'font_200',
+                        backgroundColor: background_variant_2,
                       }}
+                      // onPress={() =>
+                      //   handleApproveAccessRequest(`${each.id}`, `${each.email}`)
+                      // }
                     >
-                      Stream
-                    </Text>
-                  </TouchableOpacity>
-                </Link>
-                <Link
+                      <Text
+                        className='text-[12px]'
+                        style={{
+                          color: text_variant_5,
+                          fontFamily: 'font_500',
+                        }}
+                      >
+                        Stream
+                      </Text>
+                    </TouchableOpacity>
+                  </Link>
+                  {/* <Link
                   // href={'/log-in'}
                   href='/home'
                   className='rounded-[10px] px-4 flex items-center justify-center py-3 
@@ -344,7 +370,7 @@ const Home = () => {
                     backgroundColor: background_variant_5,
                   }}
                   asChild
-                >
+                > */}
                   <TouchableOpacity
                     className='rounded-[10px] min-w-[80px] px-4 flex items-center justify-center py-[0] 
                 min-h-[40px] mr-2'
@@ -352,7 +378,7 @@ const Home = () => {
                       // fontFamily: 'font_200',
                       backgroundColor: background_variant_5,
                     }}
-                    onPress={() => handleLogout()}
+                    onPress={() => popLogOutModal()}
                   >
                     {loading ? (
                       <ActivityIndicator size='small' color={text_variant_2} />
@@ -365,16 +391,17 @@ const Home = () => {
                       </Text>
                     )}
                   </TouchableOpacity>
-                </Link>
+                  {/* </Link> */}
+                </View>
+              </View>
+              <View className='absolute right-[10px] bottom-0'>
+                <EmptyActivityLogSVG width={110} height={110} />
               </View>
             </View>
-            <View className='absolute right-[10px] bottom-0'>
-              <EmptyActivityLogSVG width={110} height={110} />
-            </View>
           </View>
-        </View>
-      </ScrollView>
-    </View>
+        </ScrollView>
+      </View>
+    </AccessVerifier>
   );
 };
 

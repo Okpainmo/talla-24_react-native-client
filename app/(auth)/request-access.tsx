@@ -42,12 +42,6 @@ const LogIn = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [signUpForm, setSignUpForm] = useState({
-    fullName: '',
-    email: '',
-    password: '',
-    confirmedPassword: '',
-  });
 
   const context = useContext(AuthContext);
 
@@ -59,7 +53,14 @@ const LogIn = () => {
   }
 
   // Now it's safe to access `testing` after the type check
-  const { handleSignUp, loading, setError, setLoading } = context;
+  const {
+    handleSignUp,
+    loading,
+    setError,
+    setLoading,
+    signUpForm,
+    setSignUpForm,
+  } = context;
 
   const signUp = () => {
     try {
@@ -96,7 +97,7 @@ const LogIn = () => {
         <Pressable
           onPress={() => router.back()}
           style={{ borderColor: text_variant_3 }}
-          className={`mb-4 w-[40px] h-[40px] rounded-full border flex items-center justify-center`}
+          className={`mb-4 mt-4 w-[40px] h-[40px] rounded-full border flex items-center justify-center`}
         >
           <Ionicons
             name='chevron-back-outline'

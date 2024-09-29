@@ -26,10 +26,12 @@ import {
 
 import { GlobalsContext } from '@/context/Globals.context';
 import { UserContext } from '@/context/User.context';
+import { AuthContext } from '@/context/Auth.context';
 import GlobalModal from '@/components/Layout/GlobalModal';
 import { auth } from '../../firebaseConfig';
 import { getAuth } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import LogOutModal from '@/components/LogOutModal';
 
 const {
   background_variant_1,
@@ -61,16 +63,19 @@ const Profile = () => {
 
   const globalsContext = useContext(GlobalsContext);
   const userContext = useContext(UserContext);
+  const authContext = useContext(AuthContext);
 
   // Ensure context is not undefined
-  if (!globalsContext || !userContext) {
+  if (!globalsContext || !userContext || !authContext) {
     throw new Error('error: context error');
   }
 
   // Now it's safe to access `testing` after the type check
-  const { showModal, hideModal } = globalsContext;
+  const { showModal, hideModal, popLogOutModal, hideLogOutModal } =
+    globalsContext;
+  const { loading } = authContext;
   const {
-    handleUpdateUser,
+    handleUpdateUserProfile,
     isUpdating,
     error,
     setIsUpdating,
@@ -97,6 +102,7 @@ const Profile = () => {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}
     >
       <GlobalModal />
+      <LogOutModal />
       <View
         className='header flex flex-row items-center px-3 w-full'
         style={{ backgroundColor: background_variant_1 }}
@@ -131,7 +137,7 @@ const Profile = () => {
             <Ionicons name='person-outline' size={30} color={text_variant_1} />
           </View>
         </View>
-        <View className='other-updates-section flex px-3 mb-[100px]'>
+        <View className='other-updates-section flex px-3'>
           <View className='username flex flex-row mb-6'>
             <Ionicons name='person-outline' size={22} color={text_variant_1} />
             <View className='user-details-wrapper flex justify-between ml-4'>
@@ -179,38 +185,60 @@ const Profile = () => {
                     }}
                   />
                 </View>
-                <TouchableOpacity
-                  className='mt-4 rounded-[10px] w-[80px] px-4 flex items-center justify-center py-[0] 
+                <View className='flex flex-row'>
+                  <TouchableOpacity
+                    className='mt-4 rounded-[10px] w-[80px] px-4 flex items-center justify-center py-[0] 
+                min-h-[40px] mr-3'
+                    style={{
+                      // fontFamily: 'font_200',
+                      backgroundColor: background_variant_5,
+                      // color: text_variant_3,
+                    }}
+                    onPress={async () => {
+                      // setShowNameInput(false);
+                      console.log(updateForm);
+                      handleUpdateUserProfile(
+                        `${firestoreUserDocumentId}`,
+                        `userName`,
+                        updateForm
+                      );
+                    }}
+                  >
+                    {isUpdating === 'userName' ? (
+                      <ActivityIndicator size='small' color='#473bf0' />
+                    ) : (
+                      <Text
+                        className='text-[12px]'
+                        style={{
+                          color: text_variant_2,
+                          fontFamily: 'font_500',
+                        }}
+                      >
+                        update
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    className='mt-4 rounded-[10px] w-[80px] px-4 flex items-center justify-center py-[0] 
                 min-h-[40px] mr-2'
-                  style={{
-                    // fontFamily: 'font_200',
-                    backgroundColor: background_variant_5,
-                    // color: text_variant_3,
-                  }}
-                  onPress={async () => {
-                    // setShowNameInput(false);
-                    console.log(updateForm);
-                    handleUpdateUser(
-                      `${firestoreUserDocumentId}`,
-                      `userName`,
-                      updateForm
-                    );
-                  }}
-                >
-                  {isUpdating === 'userName' ? (
-                    <ActivityIndicator size='small' color='#473bf0' />
-                  ) : (
+                    style={{
+                      // fontFamily: 'font_200',
+                      backgroundColor: background_variant_2,
+                      // color: text_variant_3,
+                    }}
+                    onPress={() => setShowNameInput(false)}
+                  >
                     <Text
                       className='text-[12px]'
                       style={{
-                        color: text_variant_2,
+                        color: text_variant_5,
                         fontFamily: 'font_500',
                       }}
                     >
-                      update
+                      close
                     </Text>
-                  )}
-                </TouchableOpacity>
+                  </TouchableOpacity>
+                </View>
               </View>
               <Text
                 className={`user-name text-[14px] ${
@@ -221,7 +249,7 @@ const Profile = () => {
                 {firestoreUser?.userName}
               </Text>
               <Text
-                className='user-status text-[12px] mt-[3px] w-[80%] flex flex-wrap'
+                className={`user-status text-[12px] mt-[3px] w-[80%] flex flex-wrap`}
                 style={{ color: text_variant_1, fontFamily: 'font_300' }}
               >
                 This is your Talla-24 username, it will be visible to all users
@@ -299,7 +327,7 @@ const Profile = () => {
                   onPress={() => {
                     // setShowEmailInput(false);
                     console.log(updateForm);
-                    handleUpdateUser(
+                    handleUpdateUserProfile(
                       `${firestoreUser?.id}`,
                       `email`,
                       updateForm
@@ -350,6 +378,27 @@ const Profile = () => {
               />
             </Pressable>
           </View>
+        </View>
+        <View className='px-3 mt-[50px] mb-[100px]'>
+          <TouchableOpacity
+            className='rounded-[10px] min-w-[80px] px-4 flex items-center justify-center py-[14px]'
+            style={{
+              // fontFamily: 'font_200',
+              backgroundColor: background_variant_5,
+            }}
+            onPress={() => popLogOutModal()}
+          >
+            {loading ? (
+              <ActivityIndicator size='small' color={text_variant_2} />
+            ) : (
+              <Text
+                className='text-[12px]'
+                style={{ fontFamily: 'font_500', color: text_variant_2 }}
+              >
+                Logout
+              </Text>
+            )}
+          </TouchableOpacity>
         </View>
 
         {/* </View> */}

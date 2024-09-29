@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react';
 import {
   DarkTheme,
   DefaultTheme,
@@ -7,11 +8,11 @@ import {
 import { Stack } from 'expo-router';
 import { StatusBar, View, Text } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
 import 'react-native-reanimated';
 import AuthContextProvider from '@/context/Auth.context';
 import UserContextProvider from '@/context/User.context';
-
+import HardwareContextProvider from '@/context/Hardware.context';
+// import MailContextProvider from '@/context/Mail.context';
 import {
   default_light_backgrounds,
   default_light_texts,
@@ -93,17 +94,30 @@ export default function RootLayout() {
       <GlobalsContextProvider>
         <UserContextProvider>
           <AuthContextProvider>
-            <ThemeProvider
-              value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
-            >
-              <Stack>
-                <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
-                <Stack.Screen name='(auth)' options={{ headerShown: false }} />
-                <Stack.Screen name='(misc)' options={{ headerShown: false }} />
-                <Stack.Screen name='index' options={{ headerShown: false }} />
-                {/* <Stack.Screen name="+not-found" /> */}
-              </Stack>
-            </ThemeProvider>
+            {/* <MailContextProvider> */}
+            <HardwareContextProvider>
+              <ThemeProvider
+                value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
+              >
+                <Stack>
+                  <Stack.Screen
+                    name='(tabs)'
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name='(auth)'
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name='(misc)'
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen name='index' options={{ headerShown: false }} />
+                  {/* <Stack.Screen name="+not-found" /> */}
+                </Stack>
+              </ThemeProvider>
+            </HardwareContextProvider>
+            {/* </MailContextProvider> */}
           </AuthContextProvider>
         </UserContextProvider>
       </GlobalsContextProvider>

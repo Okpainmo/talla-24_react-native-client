@@ -61,7 +61,7 @@ export default function TabLayout() {
             <TabBarIcons
               name={focused ? 'home' : 'home-outline'}
               color={color}
-              size={22}
+              size={24}
             />
           ),
         }}
@@ -74,7 +74,7 @@ export default function TabLayout() {
             <TabBarIcons
               name={focused ? 'game-controller' : 'game-controller-outline'}
               color={color}
-              size={25}
+              size={27}
             />
           ),
         }}
@@ -87,7 +87,7 @@ export default function TabLayout() {
             <TabBarIcons
               name={focused ? 'person-circle' : 'person-circle-outline'}
               color={color}
-              size={28}
+              size={30}
             />
           ),
         }}
